@@ -123,7 +123,7 @@ router.get('/get-individual-attendance/:adminId/:userId', gymController.getIndiv
 
 // Diet 
 router.post('/create-diet', gymController.createDietPlan);
-router.post('/create-plan', gymController.createDietPla);
+router.post('/create-plan', gymController.createPlan);
 router.get('/view-diet/:trainerId', gymController.getDietPlansByTrainer);
 
 router.post('/register-admin', gymController.registerAdminBySuperAdmin);

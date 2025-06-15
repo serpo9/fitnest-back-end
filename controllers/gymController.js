@@ -21,10 +21,6 @@ const path = require("path");
 const fs = require("fs");
 const multer = require("multer");
 
-// const authMiddleware = require("middleware/auth.middleware");
-const express = require("express");
-const { logger } = require("sequelize/lib/utils/logger");
-// const moment = require('moment-timezone');
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     const { userId } = req.body;
@@ -34,9 +30,9 @@ const storage = multer.diskStorage({
   },
   filename: (req, file, cb) => {
     const { purpose } = req.body;
-    const sanitizedPurpose = purpose.toLowerCase().replace(/\s+/g, '-');
-    cb(null, `${sanitizedPurpose}.pdf`);
-  }
+    const safeName = purpose.toLowerCase().replace(/\s+/g, "-");
+    cb(null, `${safeName}.pdf`);
+  },
 });
 
 const upload = multer({
@@ -46,8 +42,14 @@ const upload = multer({
       return cb(new Error("Only PDF files are allowed."), false);
     }
     cb(null, true);
-  }
+  },
 }).single("pdf");
+
+
+// const authMiddleware = require("middleware/auth.middleware");
+const express = require("express");
+const { logger } = require("sequelize/lib/utils/logger");
+// const moment = require('moment-timezone');
 
 
 const registerAllUsers = async ()=>{
@@ -5119,63 +5121,69 @@ const getActiveAdmins = async (req, res, next) => {
 
 
 // create diet plans 
-const createDietPla = async (req, res) => {
-  try {
-    const {
-      adminId,
-      userId,
-      trainerId,
-      mealType,
-      time,
-      foodName,
-      quantity,
-      notes
-    } = req.body;
-
-    if (!adminId || !userId || !trainerId || !mealType || !time || !foodName || !quantity) {
-      return res.status(400).json({
-        success: false,
-        message: "All required fields must be provided.",
-      });
+const createPlan = (req, res) => {
+  upload(req, res, (err) => {
+    if (err) {
+      return res.status(400).json({ success: false, message: err.message });
     }
 
-    const createObj = {
-      adminId,
-      userId,
-      trainerId,
-      mealType,
-      time,
-      foodName,
-      quantity,
-      notes,
-      status: 'active'
-    };
+    try {
+      const {
+        adminId,
+        userId,
+        trainerId,
+        purpose
+      } = req.body;
 
-    sqlService.insert(sqlService.UserDietPlans, createObj, (insertRes) => {
-
-      console.log("insertRes..", insertRes);
-
-      if (!insertRes.success) {
-        return res.status(500).json({
+      // Validate required fields
+      if (
+        !adminId ||
+        !userId ||
+        !trainerId ||
+        !purpose ||
+        !req.file
+      ) {
+        return res.status(400).json({
           success: false,
-          message: "Failed to create diet plan.",
+          message: "All required fields and PDF file must be provided.",
         });
       }
 
-      res.status(201).json({
-        success: true,
-        message: "Diet plan created successfully.",
-        data: insertRes.data,
-      });
-    });
+      const filePath = `plans-${userId}/${req.file.filename}`;
 
-  } catch (error) {
-    console.error("Error in createDietPlan:", error);
-    res.status(500).json({
-      success: false,
-      message: "Something went wrong while creating the diet plan.",
-    });
-  }
+      const createObj = {
+        adminId,
+        userId,
+        trainerId,
+        purpose,
+        fileName: req.file.filename,
+        filePath,
+        status: "active",
+      };
+
+      sqlService.insert(sqlService.UserDietPlans, createObj, (insertRes) => {
+        if (!insertRes.success) {
+          return res.status(500).json({
+            success: false,
+            message: "Failed to create diet plan.",
+          });
+        }
+
+        res.status(201).json({
+          success: true,
+          message: "Diet plan with PDF created successfully.",
+          data: insertRes.data,
+        });
+      });
+
+    } catch (error) {
+      console.error("Error in createPlan:", error);
+      res.status(500).json({
+        success: false,
+        message: "Internal server error while creating the plan.",
+      });
+    }
+  });
 };
 
 
@@ -5252,5 +5260,5 @@ module.exports = {
   getDueAmount,
   registerAllUsers,
   dummyregisterUserByAdmin,
-  createDietPla
+  createPlan
 }
