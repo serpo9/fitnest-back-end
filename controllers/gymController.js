@@ -17,11 +17,38 @@ const transporter = nodemailer.createTransport({
     pass: process.env.SMTP_PASS,
   },
 });
+const path = require("path");
+const fs = require("fs");
+const multer = require("multer");
 
 // const authMiddleware = require("middleware/auth.middleware");
 const express = require("express");
 const { logger } = require("sequelize/lib/utils/logger");
 // const moment = require('moment-timezone');
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const { userId } = req.body;
+    const dir = path.join(__dirname, "..", "..", `plans-${userId}`);
+    fs.mkdirSync(dir, { recursive: true });
+    cb(null, dir);
+  },
+  filename: (req, file, cb) => {
+    const { purpose } = req.body;
+    const sanitizedPurpose = purpose.toLowerCase().replace(/\s+/g, '-');
+    cb(null, `${sanitizedPurpose}.pdf`);
+  }
+});
+
+const upload = multer({
+  storage,
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype !== "application/pdf") {
+      return cb(new Error("Only PDF files are allowed."), false);
+    }
+    cb(null, true);
+  }
+}).single("pdf");
+
 
 const registerAllUsers = async ()=>{
   userList = [
@@ -4928,6 +4955,8 @@ const createDietPlan = async (req, res) => {
   }
 };
 
+
+
 const getDietPlansByTrainer = (req, res) => {
   const { trainerId } = req.params;
   const { startDate, endDate, searchBy } = req.query;
@@ -5089,6 +5118,69 @@ const getActiveAdmins = async (req, res, next) => {
 
 
 
+// create diet plans 
+const createDietPla = async (req, res) => {
+  try {
+    const {
+      adminId,
+      userId,
+      trainerId,
+      mealType,
+      time,
+      foodName,
+      quantity,
+      notes
+    } = req.body;
+
+    if (!adminId || !userId || !trainerId || !mealType || !time || !foodName || !quantity) {
+      return res.status(400).json({
+        success: false,
+        message: "All required fields must be provided.",
+      });
+    }
+
+    const createObj = {
+      adminId,
+      userId,
+      trainerId,
+      mealType,
+      time,
+      foodName,
+      quantity,
+      notes,
+      status: 'active'
+    };
+
+    sqlService.insert(sqlService.UserDietPlans, createObj, (insertRes) => {
+
+      console.log("insertRes..", insertRes);
+
+      if (!insertRes.success) {
+        return res.status(500).json({
+          success: false,
+          message: "Failed to create diet plan.",
+        });
+      }
+
+      res.status(201).json({
+        success: true,
+        message: "Diet plan created successfully.",
+        data: insertRes.data,
+      });
+    });
+
+  } catch (error) {
+    console.error("Error in createDietPlan:", error);
+    res.status(500).json({
+      success: false,
+      message: "Something went wrong while creating the diet plan.",
+    });
+  }
+};
+
+
+
+
 module.exports = {
   registerUser,
   verifyRegisteringUser,
@@ -5159,5 +5251,6 @@ module.exports = {
   updateReceivedAmount,
   getDueAmount,
   registerAllUsers,
-  dummyregisterUserByAdmin
+  dummyregisterUserByAdmin,
+  createDietPla
 }
