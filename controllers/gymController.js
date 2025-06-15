@@ -3615,7 +3615,7 @@ const getActiveStaffUsers = (req, res) => {
   }
 
   let query = `
-    SELECT id, name, email, phoneNumber, userType 
+    SELECT id, name, email, phoneNumber, userType, employeeNo 
     FROM users 
     WHERE userType NOT IN ('Admin', 'SuperAdmin', 'Customer')
     AND status = 'active'
