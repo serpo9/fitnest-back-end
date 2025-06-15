@@ -3622,9 +3622,9 @@ const getActiveStaffUsers = (req, res) => {
     AND createdByAdmin = ${adminId}
   `;
 
-  if (fromDate && toDate && fromDate !== 'null' && toDate !== 'null') {
-    query += ` AND createdAt BETWEEN '${fromDate} 00:00:00' AND '${toDate} 23:59:59'`;
-  }
+  // if (fromDate && toDate && fromDate !== 'null' && toDate !== 'null') {
+  //   query += ` AND createdAt BETWEEN '${fromDate} 00:00:00' AND '${toDate} 23:59:59'`;
+  // }
 
   if (searchTerm && searchTerm !== 'null') {
     query += ` AND phoneNumber LIKE '%${searchTerm}%'`;
