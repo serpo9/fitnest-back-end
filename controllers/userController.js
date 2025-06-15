@@ -76,18 +76,18 @@ const userController = {
 			let query = `SELECT * FROM users WHERE userType NOT IN ('Admin', 'SuperAdmin') AND createdByAdmin = ${adminId}`;
 
 			// Apply date filtering if fromDate and toDate are provided
-			if (
-				fromDate &&
-				toDate &&
-				fromDate !== "null" &&
-				toDate !== "null" &&
-				fromDate !== undefined &&
-				toDate !== undefined
-			) {
-				fromDate = fromDate.trim();
-				toDate = toDate.trim();
-				query += ` AND createdAt BETWEEN '${fromDate}' AND '${toDate}'`;
-			}
+			// if (
+			// 	fromDate &&
+			// 	toDate &&
+			// 	fromDate !== "null" &&
+			// 	toDate !== "null" &&
+			// 	fromDate !== undefined &&
+			// 	toDate !== undefined
+			// ) {
+			// 	fromDate = fromDate.trim();
+			// 	toDate = toDate.trim();
+			// 	query += ` AND createdAt BETWEEN '${fromDate}' AND '${toDate}'`;
+			// }
 			sqlService.query(query, (response) => {
 				if (response.error) {
 					return res.status(500).json({
@@ -161,6 +161,8 @@ const userController = {
 		try {
 			const { adminId } = req.params;
 			const { fromDate, toDate, status, searchTerm } = req.query;
+			console.log("searchTerm..", searchTerm);
+			
 			if (!adminId) {
 				return res.status(400).json({
 					success: false,
@@ -183,15 +185,22 @@ const userController = {
 
 				// query += ` AND (name=${searchTerm} OR phoneNumber=${searchTerm})`;
 				const trimmedSearchTerm = searchTerm.trim(); // Trim spaces
-				query += ` AND (name='${trimmedSearchTerm}' OR phoneNumber='${trimmedSearchTerm}')`;
-				// query += ` AND (name='${searchTerm}' OR phoneNumber='${searchTerm}')`;
+
+				
+				// query += ` AND (name='${trimmedSearchTerm}' OR phoneNumber='${trimmedSearchTerm}')`;
+
+				query += ` AND (name LIKE '%${trimmedSearchTerm}%' OR phoneNumber LIKE '%${trimmedSearchTerm}%')`;
 			}
 
 			// Add date filter condition
 			if (fromDate && toDate && fromDate !== "null" && toDate !== "null") {
 				query += ` AND createdAt BETWEEN '${fromDate}' AND '${toDate}'`;
 			}
+			console.log("query...", query);
+			
 			sqlService.query(query, (response) => {
+				console.log("response..", response);
+
 				if (response.error) {
 					return res.status(500).json({
 						success: false,
@@ -617,9 +626,9 @@ WHERE DATEDIFF(m.expiryDate, NOW()) BETWEEN 1 AND 4
 
 	getStaffSalaryInfo: async (req, res, next) => {
 		try {
-			const { userId } = req.query; 
+			const { userId } = req.query;
 
-			if (!userId ) {
+			if (!userId) {
 				return res.status(400).json({
 					success: false,
 					message: "user id is required.",
@@ -635,7 +644,7 @@ WHERE DATEDIFF(m.expiryDate, NOW()) BETWEEN 1 AND 4
 				LEFT JOIN monthlySalarySettings us ON u.id = us.userId
 				WHERE u.id = ${userId}
 				`
-				
+
 			sqlService.query(query, (response) => {
 				console.log("resposne : ", response)
 				if (response.error) {
@@ -653,7 +662,7 @@ WHERE DATEDIFF(m.expiryDate, NOW()) BETWEEN 1 AND 4
 					});
 				}
 
-				
+
 
 				return res.status(200).json({
 					success: true,

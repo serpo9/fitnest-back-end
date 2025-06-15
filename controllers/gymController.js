@@ -2345,9 +2345,14 @@ const buyMembershipPlan = async (req, res) => {
           },
         };
 
-        console.log("devices...", devices);
 
 
+        if (devices.length === 0) {
+          return res.send({
+            success: true, 
+            message: 'No device found!'
+          })
+        }
 
         // Register user on devices
         const registerPromises = devices.map((device) => {
@@ -2781,6 +2786,7 @@ const getActiveCustomers = async (req, res, next) => {
 
     if (searchTerm) {
       const sanitizedSearch = searchTerm.trim();
+      
       if( isDigit(sanitizedSearch)) {
       query += ` AND ( u.employeeNo LIKE '%${sanitizedSearch}%')`;
       countQuery += ` AND ( u.employeeNo LIKE '%${sanitizedSearch}%')`; 
@@ -3136,7 +3142,7 @@ const calculateSalary = async (req, res) => {
 
   // If phoneNumber is provided, add it to the query
   if (searchTerm) {
-    getUsersQuery += ` AND phoneNumber LIKE '%${searchTerm}%'`;
+    getUsersQuery += ` AND name LIKE '%${searchTerm}%' OR  phoneNumber LIKE '%${searchTerm}%'`;
   }
 
   sqlService.query(getUsersQuery, async (usersRes) => {
@@ -3498,35 +3504,65 @@ const getMembershipInstallmentPayments = async (req, res) => {
     return res.status(400).json({ success: false, message: 'adminId is required' });
   }
 
+  // let query = `
+  //   SELECT 
+  //     u.id AS userId,
+  //     u.name AS userName,
+  //     u.phoneNumber AS userPhone,
+  //     u.email AS userEmail,
+  //     mpr.createdAt, 
+  //     mpr.purchaseHistoryId, 
+  //     mph.amountPaid as amountPaid,
+  //     mp.userId AS adminId,
+  //     mp.id AS membershipPlansId,
+  //     mph.purchaseDate, 
+  //     mpr.paymentStatus
+  //   FROM (
+  //     SELECT purchaseHistoryId, MAX(createdAt) AS latestPaymentDate, paymentStatus
+  //     FROM membershipPurchasedInstallmentAmounts
+  //     GROUP BY purchaseHistoryId
+  //   ) AS latestPayments
+  //   JOIN membershipPurchasedInstallmentAmounts mpr 
+  //     ON mpr.purchaseHistoryId = latestPayments.purchaseHistoryId 
+  //     AND mpr.createdAt = latestPayments.latestPaymentDate
+  //   JOIN membershipPurchasesHistories mph 
+  //     ON mph.id = mpr.purchaseHistoryId
+  //   JOIN users u 
+  //     ON u.id = mph.userId
+  //   LEFT JOIN membershipPlans mp 
+  //     ON mp.id = mph.membershipPlansId
+  //   WHERE mp.userId = ${adminId}
+  // `;
+
   let query = `
-    SELECT 
-      u.id AS userId,
-      u.name AS userName,
-      u.phoneNumber AS userPhone,
-      u.email AS userEmail,
-      mpr.createdAt, 
-      mpr.purchaseHistoryId, 
-      mph.amountPaid as amountPaid,
-      mp.userId AS adminId,
-      mp.id AS membershipPlansId,
-      mph.purchaseDate, 
-      mpr.paymentStatus
-    FROM (
-      SELECT purchaseHistoryId, MAX(createdAt) AS latestPaymentDate, paymentStatus
-      FROM membershipPurchasedInstallmentAmounts
-      GROUP BY purchaseHistoryId
-    ) AS latestPayments
-    JOIN membershipPurchasedInstallmentAmounts mpr 
-      ON mpr.purchaseHistoryId = latestPayments.purchaseHistoryId 
-      AND mpr.createdAt = latestPayments.latestPaymentDate
-    JOIN membershipPurchasesHistories mph 
-      ON mph.id = mpr.purchaseHistoryId
-    JOIN users u 
-      ON u.id = mph.userId
-    LEFT JOIN membershipPlans mp 
-      ON mp.id = mph.membershipPlansId
-    WHERE mp.userId = ${adminId}
-  `;
+  SELECT 
+    u.id AS userId,
+    u.name AS userName,
+    u.phoneNumber AS userPhone,
+    u.email AS userEmail,
+    mpr.createdAt, 
+    mpr.purchaseHistoryId, 
+    mph.amountPaid as amountPaid,
+    mp.userId AS adminId,
+    mp.id AS membershipPlansId,
+    mph.purchaseDate, 
+    mpr.paymentStatus
+  FROM (
+    SELECT purchaseHistoryId, MAX(createdAt) AS latestPaymentDate
+    FROM membershipPurchasedInstallmentAmounts
+    GROUP BY purchaseHistoryId
+  ) AS latestPayments
+  JOIN membershipPurchasedInstallmentAmounts mpr 
+    ON mpr.purchaseHistoryId = latestPayments.purchaseHistoryId 
+    AND mpr.createdAt = latestPayments.latestPaymentDate
+  JOIN membershipPurchasesHistories mph 
+    ON mph.id = mpr.purchaseHistoryId
+  JOIN users u 
+    ON u.id = mph.userId
+  LEFT JOIN membershipPlans mp 
+    ON mp.id = mph.membershipPlansId
+  WHERE mp.userId = ${adminId}
+`;
 
   if (
     fromDate &&
@@ -3546,6 +3582,7 @@ const getMembershipInstallmentPayments = async (req, res) => {
   query += ` ORDER BY mpr.createdAt DESC`;
 
   sqlService.query(query, (response) => {
+
     if (!response.success) {
       return res.status(500).json({ success: false, message: 'Failed to fetch membership payment histories' });
     }
