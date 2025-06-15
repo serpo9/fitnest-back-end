@@ -344,6 +344,54 @@ const UserDietPlans = sequelize.define('userDietPlans', {
 	status: Sequelize.STRING
 });
 
+const SubscriptionAssignmentRequests = sequelize.define('subscriptionAssignmentRequests', {
+	userId: {
+	  type: Sequelize.INTEGER,
+	  allowNull: false,
+	},
+	name: {
+	  type: Sequelize.STRING,
+	  allowNull: false,
+	},
+	phoneNo: {
+	  type: Sequelize.STRING,
+	},
+	email: {
+	  type: Sequelize.STRING,
+	},
+	membershipPlansId: {
+	  type: Sequelize.INTEGER,
+	  allowNull: false,
+	},
+	planType: {
+	  type: Sequelize.STRING,
+	},
+	selectedDuration: {
+	  type: Sequelize.STRING,
+	},
+	monthQty: {
+	  type: Sequelize.INTEGER,
+	},
+	amountPaid: {
+	  type: Sequelize.DECIMAL(10, 2),
+	},
+	admissionFee: {
+	  type: Sequelize.DECIMAL(10, 2),
+	},
+	paymentStatus: {
+	  type: Sequelize.BOOLEAN,
+	  defaultValue: false,
+	},
+	adminId: {
+	  type: Sequelize.INTEGER,
+	  allowNull: false,
+	}
+  }, {
+	timestamps: true,
+	createdAt: 'createdAt',
+	updatedAt: false
+  });
+  
 
 
 let sendExports = {
@@ -700,7 +748,8 @@ let sendExports = {
 	SalaryHistories,
 	MembershipPurchasesHistories,
 	MembershipPurchasedInstallmentAmounts,
-	UserDietPlans
+	UserDietPlans,
+	SubscriptionAssignmentRequests
 }
 
 module.exports = sendExports;
