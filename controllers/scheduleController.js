@@ -174,6 +174,7 @@ const scheduleController = {
     try {
       const adminId = Number(req.params.adminId);
       const { searchTerm, fromDate, toDate, status } = req.query;
+      
 
       if (!adminId || isNaN(adminId)) {
         return res.status(400).json({
@@ -204,9 +205,9 @@ const scheduleController = {
         query += ` AND sch.className LIKE '%${term}%'`;
       }
 
-      // if (fromDate && toDate) {
-      //   query += ` AND sch.createdAt BETWEEN '${fromDate}' AND '${toDate}'`;
-      // }
+      if (fromDate && toDate && fromDate != null && toDate != null && fromDate != 'null' && toDate != 'null') {
+        query += ` AND sch.createdAt BETWEEN '${fromDate}' AND '${toDate}'`;
+      }
 
       if (status) {
         const safeStatus = status.replace(/'/g, "''");
@@ -215,7 +216,7 @@ const scheduleController = {
 
       // Run the query
       sqlService.query(query, (response) => {
-        
+
         if (!response.success) {
           return res.status(500).json({
             success: false,
