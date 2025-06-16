@@ -701,7 +701,7 @@ const silentLogin = async (req, res, next) => {
   const { token } = req.query;
   let newToken = token.split("Fitnest")[0];
   console.log("newToken...", newToken);
-  
+
 
   if (!token) {
     return res
@@ -724,7 +724,7 @@ const silentLogin = async (req, res, next) => {
 
     sqlService.query(selectQuery, (response) => {
       console.log("response..", response);
-      
+
       let user = response.data[0];
 
       if (!user) {
@@ -2487,6 +2487,10 @@ const buyMembershipPlan = async (req, res) => {
 
               await insertReceivedAmount(insertData);
             }
+
+            sqlService.update(sqlService.SubscriptionRequest, { status: 'approved' }, { userId, adminId }, (response) => {
+              console.log("update subs requeset.. response..", response);
+            })
           });
 
           const invoicePayload = {

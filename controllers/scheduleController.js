@@ -862,7 +862,7 @@ const scheduleController = {
       FROM subscriptionRequests sr
       JOIN users u ON sr.userId = u.id
       JOIN membershipPlans mp ON sr.membershipPlansId = mp.id
-      WHERE sr.adminId = ${adminId}
+      WHERE sr.adminId = ${adminId} AND sr.status='pending'
       ORDER BY sr.createdAt DESC
     `;
 
