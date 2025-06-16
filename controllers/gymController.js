@@ -2390,26 +2390,26 @@ const buyMembershipPlan = async (req, res) => {
         }
 
         // Register user on devices
-        // const registerPromises = devices.map((device) => {
-        //   return registerUserOnDevices([device], userData);
-        // });
+        const registerPromises = devices.map((device) => {
+          return registerUserOnDevices([device], userData);
+        });
 
-        // const registrationResults = (await Promise.all(registerPromises)).flat();
+        const registrationResults = (await Promise.all(registerPromises)).flat();
 
-        // const allSuccess = registrationResults.every((r) => r.success);
-        // console.log("allSuccess...", allSuccess);
+        const allSuccess = registrationResults.every((r) => r.success);
+        console.log("allSuccess...", allSuccess);
 
-        // if (!allSuccess) {
-        //   const failedDevices = registrationResults
-        //     .filter(r => !r.success)
-        //     .map(r => r.deviceId || 'Unknown Device');
+        if (!allSuccess) {
+          const failedDevices = registrationResults
+            .filter(r => !r.success)
+            .map(r => r.deviceId || 'Unknown Device');
 
-        //   return res.send({
-        //     success: false,
-        //     message: "Device registration failed!",
-        //     failedDevices
-        //   });
-        // }
+          return res.send({
+            success: false,
+            message: "Device registration failed!",
+            failedDevices
+          });
+        }
 
         // All devices registered, now save to DB
         const purchaseData = {
@@ -2423,9 +2423,11 @@ const buyMembershipPlan = async (req, res) => {
           monthQty: planType === "subs-plan" ? monthQty : null,
           dayQty: planType === "visitor-plan" ? daysQty : null,
           status: 'active',
-          admissionFee
+          admissionFeez: admissionFee == "undefined" ? 0 : admissionFee
         };
 
+        console.log("purchaseData..", purchaseData);
+        
         const checkExistUserQuery = `SELECT * FROM membershipPurchases WHERE userId=${userId}`;
         sqlService.query(checkExistUserQuery, async (existUserResponse) => {
 
