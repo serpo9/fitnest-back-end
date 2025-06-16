@@ -140,6 +140,7 @@ router.post('/send-request-for-approval', gymController.requestSubscriptionAssig
 router.get('/get-subs-approval-list/:adminId', gymController.listPendingSubscriptionRequests);
 router.post('/approve-subs-approval-list/:requestId', gymController.approvePendingSubscriptionRequests);
 router.post('/upload-pdf', upload.single('file'), gymController.uploadFile);
+router.get('/get-trainer-pdfs/:trainerId',gymController.getTrainerPDFs);
 
 
 module.exports = router;

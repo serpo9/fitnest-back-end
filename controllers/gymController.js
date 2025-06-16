@@ -5129,47 +5129,6 @@ const getActiveAdmins = async (req, res, next) => {
     next(error);
   }
 };
-// const uploadFile = async (req, res) => {
-//   try {
-//     console.log("Upload Request Received");
-//     console.log("Query Params:", req.query);
-//     console.log("Uploaded File:", req.file);
-
-//     // Check if file was uploaded
-//     if (!req.file) {
-//       return res.status(400).json({
-//         error: true,
-//         message: "Please upload a PDF file using the 'file' key in FormData!",
-//       });
-//     }
-
-//     // Validate file type (redundant if multer filter is correct)
-//     if (req.file.mimetype !== 'application/pdf') {
-//       return res.status(400).json({
-//         error: true,
-//         message: "Only PDF files are allowed!",
-//       });
-//     }
-
-//     const filePath = req.file.path.replace(/\\/g, '/'); // normalize path for all OS
-
-//     return res.status(200).json({
-//       error: false,
-//       message: "File uploaded successfully!",
-//       fileName: req.file.filename,
-//       filePath,
-//       originalName: req.file.originalname,
-//       size: req.file.size,
-//     });
-
-//   } catch (error) {
-//     console.error("Upload Error:", error);
-//     return res.status(500).json({
-//       error: true,
-//       message: "Internal server error during file upload",
-//     });
-//   }
-// };
 
 // just upload pdf 
  const uploadFile = async (req, res) => {
@@ -5186,6 +5145,34 @@ const getActiveAdmins = async (req, res, next) => {
     });
   } catch (err) {
     console.error("Upload Error:", err.message);
+    res.status(500).json({ error: true, message: "Internal server error" });
+  }
+};
+
+const getTrainerPDFs = (req, res) => {
+  try {
+    const trainerId = req.params.trainerId;
+    const pdfDir = path.join(__dirname, '..', 'fitnest', '.pdf');
+
+    // Read all PDF files
+    const allFiles = fs.readdirSync(pdfDir);
+
+    // Filter files belonging to the specific trainer
+    const trainerPDFs = allFiles.filter(file => file.startsWith(trainerId + '-') && file.endsWith('.pdf'));
+
+    // Create public URLs (adjust based on your static setup)
+    const pdfUrls = trainerPDFs.map(file => ({
+      name: file,
+      url: `/fitnest/.pdf/${file}`, // <-- make sure this path is served statically via Express
+    }));
+
+    res.status(200).json({
+      error: false,
+      message: 'Trainer PDFs fetched successfully',
+      data: pdfUrls
+    });
+  } catch (err) {
+    console.error("Fetch PDF Error:", err.message);
     res.status(500).json({ error: true, message: "Internal server error" });
   }
 };
@@ -5464,5 +5451,6 @@ module.exports = {
   requestSubscriptionAssignment,
   listPendingSubscriptionRequests,
   approvePendingSubscriptionRequests,
-  uploadFile
+  uploadFile,
+  getTrainerPDFs
 }

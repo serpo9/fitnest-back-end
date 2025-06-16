@@ -23,6 +23,9 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 // Static files
 app.use(express.static(path.join(__dirname, 'public')));
+// Serve trainer PDFs
+app.use('/fitnest/.pdf', express.static(path.join(__dirname, 'fitnest', '.pdf')));
+
 
 // Views
 app.set('views', path.join(__dirname, 'views'));
