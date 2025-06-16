@@ -5129,15 +5129,14 @@ const getActiveAdmins = async (req, res, next) => {
 
 // create diet plans 
 const uplaodDietPlan = (req, res) => {
+  console.log(req , "here is the reponse .....")
   upload(req, res, (err) => {
     if (err) {
       return res.status(400).json({ success: false, message: err.message });
     }
-
     try {
       const {
         adminId,
-        userId,
         trainerId,
         purpose
       } = req.body;
@@ -5145,7 +5144,6 @@ const uplaodDietPlan = (req, res) => {
       // Validate required fields
       if (
         !adminId ||
-        !userId ||
         !trainerId ||
         !purpose ||
         !req.file
@@ -5157,10 +5155,8 @@ const uplaodDietPlan = (req, res) => {
       }
 
       const filePath = `plans-${userId}/${req.file.filename}`;
-
       const createObj = {
         adminId,
-        userId,
         trainerId,
         purpose,
         fileName: req.file.filename,
