@@ -5129,7 +5129,7 @@ const getActiveAdmins = async (req, res, next) => {
 
 // create diet plans 
 const uplaodDietPlan = (req, res) => {
-  console.log(req , "here is the reponse .....")
+  console.log(req, "here is the reponse .....")
   upload(req, res, (err) => {
     if (err) {
       return res.status(400).json({ success: false, message: err.message });
@@ -5208,10 +5208,18 @@ const requestSubscriptionAssignment = async (req, res) => {
     } = req.body;
 
     console.log("req.body.", req.body);
-    
 
-    if (!userId || !requestedBy || !adminId || !membershipPlansId || !amountPaid || !monthQty || !selectedDuration || !name || !email || !planType || !phoneNo) {
-      return res.status(400).json({ success: false, message: 'Missing required fieldsss' });
+
+    if (planType === "subs-plan") {
+      if (!userId || !requestedBy || !adminId || !membershipPlansId || !amountPaid || !monthQty || !selectedDuration || !name || !email || !planType || !phoneNo) {
+        return res.status(400).json({ message: "All fields are required" });
+      }
+    }
+
+    if (planType === "visitor-plan") {
+      if (!userId || !membershipPlansId || !requestedBy || !adminId || !name || !email || !planType || !phoneNo) {
+        return res.status(400).json({ message: "All fields are required" });
+      }
     }
 
     let requestObj = {
