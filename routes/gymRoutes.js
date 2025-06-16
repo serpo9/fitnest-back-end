@@ -1,4 +1,7 @@
 const express = require('express');
+const multer = require('multer');
+const fs = require('fs');
+const path = require('path');
 const gymController = require('../controllers/gymController.js');
 const userController = require('../controllers/userController.js');
 const scheduleController = require('../controllers/scheduleController.js');
@@ -32,6 +35,46 @@ router.get('/get-subscriptionplan/:adminId/:duration?', gymController.getallsubs
 router.get('/get-trainer-schedules/:trainerId', gymController.trainerSchedules);
 router.get('/get-all-trainer-schedules/:adminId', gymController.getAllTrainerSchedules);
 router.get('/get-gymname/:adminId', gymController.getAdminGymName);
+
+
+
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+      console.log("req query:", req.query);
+      const fileType = req.query.type || 'dietplan';
+  
+      // Always store under fitnestAssets/plans/dietplan
+      const uploadPath = path.join(__dirname, '..', 'fitnestAssets', 'plans', 'dietplan' ,fileType);
+  
+      // Create folder if it does not exist
+      if (!fs.existsSync(uploadPath)) {
+        fs.mkdirSync(uploadPath, { recursive: true });
+      }
+  
+      cb(null, uploadPath);
+    },
+  
+    filename: (req, file, cb) => {
+      const trainerId = req.query.trainerId || 'unknown';
+      const timestamp = Date.now();
+      const ext = path.extname(file.originalname); // .pdf
+      const safeFilename = `${trainerId}-dietplan-${timestamp}${ext}`;
+      cb(null, safeFilename);
+    }
+  });
+  
+  // Allow only PDF
+  const fileFilter = (req, file, cb) => {
+    if (file.mimetype === "application/pdf") {
+      cb(null, true);
+    } else {
+      cb(new Error("Only PDF files are allowed!"), false);
+    }
+  };
+  
+  const upload = multer({ storage, fileFilter });
+  
+  
 
 router.post('/complete-profile', userController.completeProfile);
 router.get('/user-profile/:userId', gymController.getProfileDetails);
@@ -123,7 +166,6 @@ router.get('/get-individual-attendance/:adminId/:userId', gymController.getIndiv
 
 // Diet 
 router.post('/create-diet', gymController.createDietPlan);
-router.post('/create-plan', gymController.uplaodDietPlan);
 router.get('/view-diet/:trainerId', gymController.getDietPlansByTrainer);
 
 router.post('/register-admin', gymController.registerAdminBySuperAdmin);
@@ -136,5 +178,7 @@ router.get('/get-dietplan/:userId', userController.getUserDietPlans);
 router.post('/send-request-for-approval', gymController.requestSubscriptionAssignment);
 router.get('/get-subs-approval-list/:adminId', gymController.listPendingSubscriptionRequests);
 router.post('/approve-subs-approval-list/:requestId', gymController.approvePendingSubscriptionRequests);
+router.post('/upload-file', upload.single('file'), gymController.uploadFile);
+
 
 module.exports = router;
