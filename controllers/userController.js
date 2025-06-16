@@ -161,7 +161,6 @@ const userController = {
 		try {
 			const { adminId } = req.params;
 			const { fromDate, toDate, status, searchTerm } = req.query;
-			console.log("searchTerm..", searchTerm);
 			
 			if (!adminId) {
 				return res.status(400).json({
@@ -196,7 +195,6 @@ const userController = {
 			if (fromDate && toDate && fromDate !== "null" && toDate !== "null") {
 				query += ` AND createdAt BETWEEN '${fromDate}' AND '${toDate}'`;
 			}
-			console.log("query...", query);
 			
 			sqlService.query(query, (response) => {
 				console.log("response..", response);
