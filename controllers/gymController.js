@@ -2297,8 +2297,6 @@ const buyMembershipPlan = async (req, res) => {
       admissionFee
     } = req.body;
 
-    console.log("calllingl... ", req.body);
-
 
     // Validation
     if (planType === "subs-plan") {
@@ -2426,7 +2424,7 @@ const buyMembershipPlan = async (req, res) => {
 
         const checkExistUserQuery = `SELECT * FROM membershipPurchases WHERE userId=${userId}`;
         sqlService.query(checkExistUserQuery, async (existUserResponse) => {
-          console.log("exist user res : ", existUserResponse);
+
           if (!existUserResponse.success) {
             return res.status(500).json({ success: false, message: "Internal server error" });
           }
