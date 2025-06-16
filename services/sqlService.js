@@ -262,7 +262,7 @@ const MembershipPurchasedInstallmentAmounts = sequelize.define('membershipPurcha
 	userId: Sequelize.INTEGER,
 	receivedAmount: Sequelize.STRING,
 	paymentStatus: Sequelize.STRING,
-	
+
 });
 
 const Attendances = sequelize.define('attendances', {
@@ -299,6 +299,11 @@ const SubscriptionRequest = sequelize.define('subscriptionRequest', {
 			model: Users, key: 'id'
 		},
 		onDelete: 'CASCADE'
+	},
+	adminId: Sequelize.INTEGER,
+	status: {
+		type: Sequelize.STRING,
+		defaultValue: 'pending',
 	},
 }, {
 	timestamps: true
@@ -346,52 +351,52 @@ const UserDietPlans = sequelize.define('userDietPlans', {
 
 const SubscriptionAssignmentRequests = sequelize.define('subscriptionAssignmentRequests', {
 	userId: {
-	  type: Sequelize.INTEGER,
-	  allowNull: false,
+		type: Sequelize.INTEGER,
+		allowNull: false,
 	},
 	name: {
-	  type: Sequelize.STRING,
-	  allowNull: false,
+		type: Sequelize.STRING,
+		allowNull: false,
 	},
 	phoneNo: {
-	  type: Sequelize.STRING,
+		type: Sequelize.STRING,
 	},
 	email: {
-	  type: Sequelize.STRING,
+		type: Sequelize.STRING,
 	},
 	membershipPlansId: {
-	  type: Sequelize.INTEGER,
-	  allowNull: false,
+		type: Sequelize.INTEGER,
+		allowNull: false,
 	},
 	planType: {
-	  type: Sequelize.STRING,
+		type: Sequelize.STRING,
 	},
 	selectedDuration: {
-	  type: Sequelize.STRING,
+		type: Sequelize.STRING,
 	},
 	monthQty: {
-	  type: Sequelize.INTEGER,
+		type: Sequelize.INTEGER,
 	},
 	amountPaid: {
-	  type: Sequelize.STRING,
+		type: Sequelize.STRING,
 	},
 	admissionFee: {
-	  type: Sequelize.STRING,
+		type: Sequelize.STRING,
 	},
 	status: {
-	  type: Sequelize.STRING,
-	  defaultValue: 'pending',
+		type: Sequelize.STRING,
+		defaultValue: 'pending',
 	},
 	paymentStatus: {
-	  type: Sequelize.STRING,
-	  defaultValue: 'false',
+		type: Sequelize.STRING,
+		defaultValue: 'false',
 	},
 	adminId: {
-	  type: Sequelize.INTEGER,
-	  allowNull: false,
+		type: Sequelize.INTEGER,
+		allowNull: false,
 	}
-  });
-  
+});
+
 
 
 let sendExports = {

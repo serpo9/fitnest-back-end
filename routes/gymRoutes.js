@@ -101,7 +101,7 @@ router.get('/users-for-notification/:adminId', userController.findUsersForNotifi
 router.post('/send-invoice', notificationController.sendInvoice);
 router.get('/trainer-schedule/', scheduleController.getTrainerSchedules);
 router.post('/request-subscription', scheduleController.requestSubscription);
-router.get('/get-subscription-request', scheduleController.getSubscriptionRequests);
+router.get('/get-subscription-request/:adminId', scheduleController.getSubscriptionRequests);
 router.get('/get-staff/:adminId',userController.getStaff);
 router.post('/registerStaff',userController.registerStaff);
 
