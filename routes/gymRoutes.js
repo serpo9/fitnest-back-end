@@ -1,9 +1,13 @@
 const express = require('express');
+const multer = require('multer');
+const fs = require('fs');
+const path = require('path');
 const gymController = require('../controllers/gymController.js');
 const userController = require('../controllers/userController.js');
 const scheduleController = require('../controllers/scheduleController.js');
 const notificationController = require('../controllers/notificationController.js');
 const router = express.Router();
+const upload = require("../config/multer.js")
 
 router.post('/admin/batch-register', gymController.registerAllUsers);
 router.post('/dummy/batch-register', gymController.dummyregisterUserByAdmin);
@@ -123,7 +127,6 @@ router.get('/get-individual-attendance/:adminId/:userId', gymController.getIndiv
 
 // Diet 
 router.post('/create-diet', gymController.createDietPlan);
-router.post('/create-plan', gymController.uplaodDietPlan);
 router.get('/view-diet/:trainerId', gymController.getDietPlansByTrainer);
 
 router.post('/register-admin', gymController.registerAdminBySuperAdmin);
@@ -136,5 +139,8 @@ router.get('/get-dietplan/:userId', userController.getUserDietPlans);
 router.post('/send-request-for-approval', gymController.requestSubscriptionAssignment);
 router.get('/get-subs-approval-list/:adminId', gymController.listPendingSubscriptionRequests);
 router.post('/approve-subs-approval-list/:requestId', gymController.approvePendingSubscriptionRequests);
+router.post('/upload-pdf', upload.single('file'), gymController.uploadFile);
+router.get('/get-trainer-pdfs/:trainerId',gymController.getTrainerPDFs);
+
 
 module.exports = router;

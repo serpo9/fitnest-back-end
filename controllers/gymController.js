@@ -6,6 +6,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
 const devices = require("../config/device");
+const fs = require("fs");
 const moment = require("moment");
 const { v4: uuidv4 } = require("uuid");
 const transporter = nodemailer.createTransport({
@@ -18,33 +19,36 @@ const transporter = nodemailer.createTransport({
   },
 });
 const path = require("path");
-const fs = require("fs");
 const multer = require("multer");
 const axios = require('axios');
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    const { userId } = req.body;
-    const dir = path.join(__dirname, "..", "..", `plans-${userId}`);
-    fs.mkdirSync(dir, { recursive: true });
+    const dir = "fitnestAssets/plans/dietplan";
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
     cb(null, dir);
   },
   filename: (req, file, cb) => {
-    const { purpose } = req.body;
-    const safeName = purpose.toLowerCase().replace(/\s+/g, "-");
-    cb(null, `${safeName}.pdf`);
+    const uniqueName = Date.now() + "-" + file.originalname.replace(/\s/g, "_");
+    cb(null, uniqueName);
   },
 });
 
+const fileFilter = (req, file, cb) => {
+  if (file.mimetype === "application/pdf") {
+    cb(null, true);
+  } else {
+    cb(new Error("Only PDF files are allowed!"), false);
+  }
+};
+
 const upload = multer({
   storage,
-  fileFilter: (req, file, cb) => {
-    if (file.mimetype !== "application/pdf") {
-      return cb(new Error("Only PDF files are allowed."), false);
-    }
-    cb(null, true);
-  },
-}).single("pdf");
+  fileFilter,
+  limits: { fileSize: 10 * 1024 * 1024 },
+}).single("file");
 
 
 // const authMiddleware = require("middleware/auth.middleware");
@@ -5126,69 +5130,54 @@ const getActiveAdmins = async (req, res, next) => {
   }
 };
 
-
-
-// create diet plans 
-const uplaodDietPlan = (req, res) => {
-  console.log(req, "here is the reponse .....")
-  upload(req, res, (err) => {
-    if (err) {
-      return res.status(400).json({ success: false, message: err.message });
+// just upload pdf 
+ const uploadFile = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: true, message: "Please upload a PDF file!" });
     }
-    try {
-      const {
-        adminId,
-        trainerId,
-        purpose
-      } = req.body;
 
-      // Validate required fields
-      if (
-        !adminId ||
-        !trainerId ||
-        !purpose ||
-        !req.file
-      ) {
-        return res.status(400).json({
-          success: false,
-          message: "All required fields and PDF file must be provided.",
-        });
-      }
-
-      const filePath = `plans-${userId}/${req.file.filename}`;
-      const createObj = {
-        adminId,
-        trainerId,
-        purpose,
-        fileName: req.file.filename,
-        filePath,
-        status: "active",
-      };
-
-      sqlService.insert(sqlService.UserDietPlans, createObj, (insertRes) => {
-        if (!insertRes.success) {
-          return res.status(500).json({
-            success: false,
-            message: "Failed to create diet plan.",
-          });
-        }
-
-        res.status(201).json({
-          success: true,
-          message: "Diet plan with PDF created successfully.",
-          data: insertRes.data,
-        });
-      });
-
-    } catch (error) {
-      console.error("Error in createPlan:", error);
-      res.status(500).json({
-        success: false,
-        message: "Internal server error while creating the plan.",
-      });
-    }
-  });
+    res.status(200).json({
+      error: false,
+      message: "PDF uploaded successfully!",
+      filename: req.file.filename,
+      path: req.file.path
+    });
+  } catch (err) {
+    console.error("Upload Error:", err.message);
+    res.status(500).json({ error: true, message: "Internal server error" });
+  }
 };
+
+const getTrainerPDFs = (req, res) => {
+  try {
+    const trainerId = req.params.trainerId;
+    const pdfDir = path.join(__dirname, '..', 'fitnest', '.pdf');
+
+    // Read all PDF files
+    const allFiles = fs.readdirSync(pdfDir);
+
+    // Filter files belonging to the specific trainer
+    const trainerPDFs = allFiles.filter(file => file.startsWith(trainerId + '-') && file.endsWith('.pdf'));
+
+    // Create public URLs (adjust based on your static setup)
+    const pdfUrls = trainerPDFs.map(file => ({
+      name: file,
+      url: `/fitnest/.pdf/${file}`, // <-- make sure this path is served statically via Express
+    }));
+
+    res.status(200).json({
+      error: false,
+      message: 'Trainer PDFs fetched successfully',
+      data: pdfUrls
+    });
+  } catch (err) {
+    console.error("Fetch PDF Error:", err.message);
+    res.status(500).json({ error: true, message: "Internal server error" });
+  }
+};
+
+
 
 // Reception view
 const requestSubscriptionAssignment = async (req, res) => {
@@ -5459,8 +5448,9 @@ module.exports = {
   getDueAmount,
   registerAllUsers,
   dummyregisterUserByAdmin,
-  uplaodDietPlan,
   requestSubscriptionAssignment,
   listPendingSubscriptionRequests,
-  approvePendingSubscriptionRequests
+  approvePendingSubscriptionRequests,
+  uploadFile,
+  getTrainerPDFs
 }
