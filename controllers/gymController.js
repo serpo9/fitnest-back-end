@@ -704,8 +704,6 @@ const login = async (req, res, next) => {
 const silentLogin = async (req, res, next) => {
   const { token } = req.query;
   let newToken = token.split("Fitnest")[0];
-  console.log("newToken...", newToken);
-  
 
   if (!token) {
     return res
@@ -727,8 +725,6 @@ const silentLogin = async (req, res, next) => {
     const selectQuery = `SELECT * FROM users WHERE email="${userEmail}" LIMIT 1`;
 
     sqlService.query(selectQuery, (response) => {
-      console.log("response..", response);
-      
       let user = response.data[0];
 
       if (!user) {
@@ -2394,26 +2390,26 @@ const buyMembershipPlan = async (req, res) => {
         }
 
         // Register user on devices
-        const registerPromises = devices.map((device) => {
-          return registerUserOnDevices([device], userData);
-        });
+        // const registerPromises = devices.map((device) => {
+        //   return registerUserOnDevices([device], userData);
+        // });
 
-        const registrationResults = (await Promise.all(registerPromises)).flat();
+        // const registrationResults = (await Promise.all(registerPromises)).flat();
 
-        const allSuccess = registrationResults.every((r) => r.success);
-        console.log("allSuccess...", allSuccess);
+        // const allSuccess = registrationResults.every((r) => r.success);
+        // console.log("allSuccess...", allSuccess);
 
-        if (!allSuccess) {
-          const failedDevices = registrationResults
-            .filter(r => !r.success)
-            .map(r => r.deviceId || 'Unknown Device');
+        // if (!allSuccess) {
+        //   const failedDevices = registrationResults
+        //     .filter(r => !r.success)
+        //     .map(r => r.deviceId || 'Unknown Device');
 
-          return res.send({
-            success: false,
-            message: "Device registration failed!",
-            failedDevices
-          });
-        }
+        //   return res.send({
+        //     success: false,
+        //     message: "Device registration failed!",
+        //     failedDevices
+        //   });
+        // }
 
         // All devices registered, now save to DB
         const purchaseData = {
@@ -2510,6 +2506,7 @@ const buyMembershipPlan = async (req, res) => {
           };
 
           try {
+            sqlService.update(sqlService.SubscriptionRequest, { status: 'approved' }, { userId, adminId }, (response) => {})
             await sendInvoice(invoicePayload);
             console.log("Invoice sent!");
           } catch (invoiceErr) {

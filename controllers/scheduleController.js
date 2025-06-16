@@ -174,6 +174,7 @@ const scheduleController = {
     try {
       const adminId = Number(req.params.adminId);
       const { searchTerm, fromDate, toDate, status } = req.query;
+      
 
       if (!adminId || isNaN(adminId)) {
         return res.status(400).json({
@@ -204,7 +205,7 @@ const scheduleController = {
         query += ` AND sch.className LIKE '%${term}%'`;
       }
 
-      if (fromDate && toDate) {
+      if (fromDate && toDate && fromDate != null && toDate != null && fromDate != 'null' && toDate != 'null') {
         query += ` AND sch.createdAt BETWEEN '${fromDate}' AND '${toDate}'`;
       }
 
@@ -215,6 +216,7 @@ const scheduleController = {
 
       // Run the query
       sqlService.query(query, (response) => {
+
         if (!response.success) {
           return res.status(500).json({
             success: false,
@@ -862,7 +864,7 @@ const scheduleController = {
       FROM subscriptionRequests sr
       JOIN users u ON sr.userId = u.id
       JOIN membershipPlans mp ON sr.membershipPlansId = mp.id
-      WHERE sr.adminId = ${adminId}
+      WHERE sr.adminId = ${adminId} AND sr.status='pending'
       ORDER BY sr.createdAt DESC
     `;
 
