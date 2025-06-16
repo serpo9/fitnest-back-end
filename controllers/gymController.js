@@ -20,6 +20,7 @@ const transporter = nodemailer.createTransport({
 const path = require("path");
 const fs = require("fs");
 const multer = require("multer");
+const axios = require('axios');
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -52,110 +53,110 @@ const { logger } = require("sequelize/lib/utils/logger");
 // const moment = require('moment-timezone');
 
 
-const registerAllUsers = async ()=>{
+const registerAllUsers = async () => {
   userList = [
-  { "name": "Dhan Raj Sharma", "employeeNo": "380" },
-  { "name": "Nirmala Bhatt", "employeeNo": "00000337" },
-  { "name": "Sarswati Bhatt", "employeeNo": "00000855" },
-  { "name": "Nar singh Bohara", "employeeNo": "439" },
-  { "name": "shristi bhatt", "employeeNo": "00001412" },
-  { "name": "Aashana Ayer", "employeeNo": "00000624" },
-  { "name": "Ramesh Prsad Bohara", "employeeNo": "00000334" },
-  { "name": "Gyanu rawat", "employeeNo": "00000390" },
-  { "name": "Raju Kunwar", "employeeNo": "332" },
-  { "name": "Laxmi Chand", "employeeNo": "00001235" },
-  { "name": "Abiral Chand", "employeeNo": "00000596" },
-  { "name": "Anurag Bhatt", "employeeNo": "00000192" },
-  { "name": "Dipesh Deuba", "employeeNo": "00000290" },
-  { "name": "Niraj Deuba", "employeeNo": "00000791" },
-  { "name": "Bishnu Prasad Kharel", "employeeNo": "00000320" },
-  { "name": "Gyanendra Rawal", "employeeNo": "00000300" },
-  { "name": "Dipendra Thakurathi", "employeeNo": "440" },
-  { "name": "Bimal bist", "employeeNo": "00001431" },
-  { "name": "Utkrishta rawal", "employeeNo": "00001250" },
-  { "name": "Pankaj Rawal", "employeeNo": "00001157" },
-  { "name": "Ganga Thapa", "employeeNo": "459" },
-  { "name": "Saksham Gupta", "employeeNo": "386" },
-  { "name": "Prabin Deuba", "employeeNo": "438" },
-  { "name": "Ammar Singh Khadka", "employeeNo": "00000488" },
-  { "name": "Anjali Chand", "employeeNo": "00001338" },
-  { "name": "Kanchan Chand", "employeeNo": "00001345" },
-  { "name": "Rajendra Khati", "employeeNo": "302" },
-  { "name": "Karna Shahi", "employeeNo": "307" },
-  { "name": "Parash Joshi", "employeeNo": "00001446" },
-  { "name": "Laxman Kharel", "employeeNo": "00000161" },
-  { "name": "Buddi thapa", "employeeNo": "0000001" },
-  { "name": "Rupa Shresta", "employeeNo": "444" },
-  { "name": "Babita Karki", "employeeNo": "445" },
-  { "name": "Khakendara Karki", "employeeNo": "00000731" },
-  { "name": "Shrisht Mahara", "employeeNo": "00001160" },
-  { "name": "Sirjana Gahatra", "employeeNo": "460" },
-  { "name": "Vishal Gurung", "employeeNo": "387" },
-  { "name": "Yagya raj Awasthi", "employeeNo": "123" },
-  { "name": "Andy pandey", "employeeNo": "00000240" },
-  { "name": "Urmi thapa", "employeeNo": "00000010" },
-  { "name": "Hemant Saud", "employeeNo": "373" },
-  { "name": "piyush joshi", "employeeNo": "00001423" },
-  { "name": "Krish Pant", "employeeNo": "312" },
-  { "name": "Tapendra Thagunna", "employeeNo": "268" },
-  { "name": "Anand Bhatt", "employeeNo": "442" },
-  { "name": "Sunil Rokaya", "employeeNo": "347" },
-  { "name": "Bharat Dhanuk", "employeeNo": "00000419" },
-  { "name": "Himanshu Chand", "employeeNo": "00001447" },
-  { "name": "Hritik Bhatt", "employeeNo": "391" },
-  { "name": "Pankaj Pal", "employeeNo": "00001276" },
-  { "name": "AatipBohara", "employeeNo": "216" },
-  { "name": "Ashim K.c", "employeeNo": "00000186" },
-  { "name": "Bibek shantanu", "employeeNo": "00000268" },
-  { "name": "Kushal Pandey", "employeeNo": "00000406" },
-  { "name": "Ansu Bist", "employeeNo": "00001456" },
-  { "name": "Dinesh Bhatt", "employeeNo": "00001457" },
-  { "name": "Paras Joshi", "employeeNo": "00000271" },
-  { "name": "Vinod Pandey", "employeeNo": "00000249" },
-  { "name": "Kishor Lekhak", "employeeNo": "00000179" },
-  { "name": "Bikram Bist", "employeeNo": "394" },
-  { "name": "Krish Joshi", "employeeNo": "260" },
-  { "name": "Rohit Thapa", "employeeNo": "449" },
-  { "name": "Bansh Chand", "employeeNo": "461" },
-  { "name": "Aashrit Kahthayat", "employeeNo": "452" },
-  { "name": "Janak Bohara", "employeeNo": "00000369" },
-  { "name": "Suraj chand", "employeeNo": "00000019" },
-  { "name": "Khusbu Awasthi", "employeeNo": "00000645" },
-  { "name": "Surendra Jagri", "employeeNo": "450" },
-  { "name": "Ram Bdh Chand", "employeeNo": "00001151" },
-  { "name": "Sandip Mahara", "employeeNo": "00000500" },
-  { "name": "Garima Mahara", "employeeNo": "316" },
-  { "name": "Anup Joshi", "employeeNo": "00001006" },
-  { "name": "Bhawana Chand Bohora", "employeeNo": "00000235" },
-  { "name": "Mahesh Bhatt", "employeeNo": "00000603" },
-  { "name": "Kapil Singh Mauni", "employeeNo": "00001444" },
-  { "name": "Rijan Saud", "employeeNo": "00000466" },
-  { "name": "aayushjoshi", "employeeNo": "199" },
-  { "name": "Anuj Bohara", "employeeNo": "435" },
-  { "name": "NikhilJoshi", "employeeNo": "46" },
-  { "name": "Bibek dangaura", "employeeNo": "00000576" },
-  { "name": "Asad ( guddu bhai )", "employeeNo": "00001433" },
-  { "name": "Roman singh Thakuri", "employeeNo": "280" },
-  { "name": "Sujal Joshi", "employeeNo": "370" },
-  { "name": "Rabin Joshi", "employeeNo": "00001177" },
-  { "name": "TapendraChhetri", "employeeNo": "146" },
-  { "name": "Parwati Chaudhary", "employeeNo": "00000818" },
-  { "name": "Khem Joshi", "employeeNo": "00000237" },
-  { "name": "Sugam Rana", "employeeNo": "00001021" },
-  { "name": "Aman Paudel", "employeeNo": "366" },
-  { "name": "Prashant Chand", "employeeNo": "00000229" },
-  { "name": "Kamal Bhatt", "employeeNo": "00000141" },
-  { "name": "NirajanJoshi", "employeeNo": "110" },
-  { "name": "Rohit Bhattarai", "employeeNo": "369" },
-  { "name": "Prashant Bhatt", "employeeNo": "368" },
-  { "name": "Sandesh Bokati", "employeeNo": "00000460" },
-  { "name": "Nirmala Oad", "employeeNo": "453" },
-  { "name": "Kamala Dhami", "employeeNo": "00000311" },
-  { "name": "D.r Durgesh Chaudhary", "employeeNo": "00001374" },
-  { "name": "Amit Rawal", "employeeNo": "00000539" },
-  { "name": "kabi pant", "employeeNo": "244" },
-  { "name": "Sahil mahara", "employeeNo": "00000324" }
-]
+    { "name": "Dhan Raj Sharma", "employeeNo": "380" },
+    { "name": "Nirmala Bhatt", "employeeNo": "00000337" },
+    { "name": "Sarswati Bhatt", "employeeNo": "00000855" },
+    { "name": "Nar singh Bohara", "employeeNo": "439" },
+    { "name": "shristi bhatt", "employeeNo": "00001412" },
+    { "name": "Aashana Ayer", "employeeNo": "00000624" },
+    { "name": "Ramesh Prsad Bohara", "employeeNo": "00000334" },
+    { "name": "Gyanu rawat", "employeeNo": "00000390" },
+    { "name": "Raju Kunwar", "employeeNo": "332" },
+    { "name": "Laxmi Chand", "employeeNo": "00001235" },
+    { "name": "Abiral Chand", "employeeNo": "00000596" },
+    { "name": "Anurag Bhatt", "employeeNo": "00000192" },
+    { "name": "Dipesh Deuba", "employeeNo": "00000290" },
+    { "name": "Niraj Deuba", "employeeNo": "00000791" },
+    { "name": "Bishnu Prasad Kharel", "employeeNo": "00000320" },
+    { "name": "Gyanendra Rawal", "employeeNo": "00000300" },
+    { "name": "Dipendra Thakurathi", "employeeNo": "440" },
+    { "name": "Bimal bist", "employeeNo": "00001431" },
+    { "name": "Utkrishta rawal", "employeeNo": "00001250" },
+    { "name": "Pankaj Rawal", "employeeNo": "00001157" },
+    { "name": "Ganga Thapa", "employeeNo": "459" },
+    { "name": "Saksham Gupta", "employeeNo": "386" },
+    { "name": "Prabin Deuba", "employeeNo": "438" },
+    { "name": "Ammar Singh Khadka", "employeeNo": "00000488" },
+    { "name": "Anjali Chand", "employeeNo": "00001338" },
+    { "name": "Kanchan Chand", "employeeNo": "00001345" },
+    { "name": "Rajendra Khati", "employeeNo": "302" },
+    { "name": "Karna Shahi", "employeeNo": "307" },
+    { "name": "Parash Joshi", "employeeNo": "00001446" },
+    { "name": "Laxman Kharel", "employeeNo": "00000161" },
+    { "name": "Buddi thapa", "employeeNo": "0000001" },
+    { "name": "Rupa Shresta", "employeeNo": "444" },
+    { "name": "Babita Karki", "employeeNo": "445" },
+    { "name": "Khakendara Karki", "employeeNo": "00000731" },
+    { "name": "Shrisht Mahara", "employeeNo": "00001160" },
+    { "name": "Sirjana Gahatra", "employeeNo": "460" },
+    { "name": "Vishal Gurung", "employeeNo": "387" },
+    { "name": "Yagya raj Awasthi", "employeeNo": "123" },
+    { "name": "Andy pandey", "employeeNo": "00000240" },
+    { "name": "Urmi thapa", "employeeNo": "00000010" },
+    { "name": "Hemant Saud", "employeeNo": "373" },
+    { "name": "piyush joshi", "employeeNo": "00001423" },
+    { "name": "Krish Pant", "employeeNo": "312" },
+    { "name": "Tapendra Thagunna", "employeeNo": "268" },
+    { "name": "Anand Bhatt", "employeeNo": "442" },
+    { "name": "Sunil Rokaya", "employeeNo": "347" },
+    { "name": "Bharat Dhanuk", "employeeNo": "00000419" },
+    { "name": "Himanshu Chand", "employeeNo": "00001447" },
+    { "name": "Hritik Bhatt", "employeeNo": "391" },
+    { "name": "Pankaj Pal", "employeeNo": "00001276" },
+    { "name": "AatipBohara", "employeeNo": "216" },
+    { "name": "Ashim K.c", "employeeNo": "00000186" },
+    { "name": "Bibek shantanu", "employeeNo": "00000268" },
+    { "name": "Kushal Pandey", "employeeNo": "00000406" },
+    { "name": "Ansu Bist", "employeeNo": "00001456" },
+    { "name": "Dinesh Bhatt", "employeeNo": "00001457" },
+    { "name": "Paras Joshi", "employeeNo": "00000271" },
+    { "name": "Vinod Pandey", "employeeNo": "00000249" },
+    { "name": "Kishor Lekhak", "employeeNo": "00000179" },
+    { "name": "Bikram Bist", "employeeNo": "394" },
+    { "name": "Krish Joshi", "employeeNo": "260" },
+    { "name": "Rohit Thapa", "employeeNo": "449" },
+    { "name": "Bansh Chand", "employeeNo": "461" },
+    { "name": "Aashrit Kahthayat", "employeeNo": "452" },
+    { "name": "Janak Bohara", "employeeNo": "00000369" },
+    { "name": "Suraj chand", "employeeNo": "00000019" },
+    { "name": "Khusbu Awasthi", "employeeNo": "00000645" },
+    { "name": "Surendra Jagri", "employeeNo": "450" },
+    { "name": "Ram Bdh Chand", "employeeNo": "00001151" },
+    { "name": "Sandip Mahara", "employeeNo": "00000500" },
+    { "name": "Garima Mahara", "employeeNo": "316" },
+    { "name": "Anup Joshi", "employeeNo": "00001006" },
+    { "name": "Bhawana Chand Bohora", "employeeNo": "00000235" },
+    { "name": "Mahesh Bhatt", "employeeNo": "00000603" },
+    { "name": "Kapil Singh Mauni", "employeeNo": "00001444" },
+    { "name": "Rijan Saud", "employeeNo": "00000466" },
+    { "name": "aayushjoshi", "employeeNo": "199" },
+    { "name": "Anuj Bohara", "employeeNo": "435" },
+    { "name": "NikhilJoshi", "employeeNo": "46" },
+    { "name": "Bibek dangaura", "employeeNo": "00000576" },
+    { "name": "Asad ( guddu bhai )", "employeeNo": "00001433" },
+    { "name": "Roman singh Thakuri", "employeeNo": "280" },
+    { "name": "Sujal Joshi", "employeeNo": "370" },
+    { "name": "Rabin Joshi", "employeeNo": "00001177" },
+    { "name": "TapendraChhetri", "employeeNo": "146" },
+    { "name": "Parwati Chaudhary", "employeeNo": "00000818" },
+    { "name": "Khem Joshi", "employeeNo": "00000237" },
+    { "name": "Sugam Rana", "employeeNo": "00001021" },
+    { "name": "Aman Paudel", "employeeNo": "366" },
+    { "name": "Prashant Chand", "employeeNo": "00000229" },
+    { "name": "Kamal Bhatt", "employeeNo": "00000141" },
+    { "name": "NirajanJoshi", "employeeNo": "110" },
+    { "name": "Rohit Bhattarai", "employeeNo": "369" },
+    { "name": "Prashant Bhatt", "employeeNo": "368" },
+    { "name": "Sandesh Bokati", "employeeNo": "00000460" },
+    { "name": "Nirmala Oad", "employeeNo": "453" },
+    { "name": "Kamala Dhami", "employeeNo": "00000311" },
+    { "name": "D.r Durgesh Chaudhary", "employeeNo": "00001374" },
+    { "name": "Amit Rawal", "employeeNo": "00000539" },
+    { "name": "kabi pant", "employeeNo": "244" },
+    { "name": "Sahil mahara", "employeeNo": "00000324" }
+  ]
 
   for (let i = 0; i < userList.length; i++) {
     let user = userList[i];
@@ -172,7 +173,7 @@ const registerAllUsers = async ()=>{
         healthIssue: null,
         createdByAdmin: 2,
         employeeNo,
-        email: null, 
+        email: null,
       }
     };
 
@@ -421,7 +422,7 @@ const registerUserByAdmin = async (req, res, next) => {
       cPassword,
     } = req.body;
 
-    if (!name  || !userType || !password || !cPassword) {
+    if (!name || !userType || !password || !cPassword) {
       return res.status(200).json({
         success: false,
         message: "All fields are required!",
@@ -531,7 +532,7 @@ const dummyregisterUserByAdmin = async (req, res, next) => {
       cPassword,
     } = req.body;
 
-    if (!name  || !userType || !password || !cPassword) {
+    if (!name || !userType || !password || !cPassword) {
       return res.status(200).json({
         success: false,
         message: "All fields are required!",
@@ -565,22 +566,22 @@ const dummyregisterUserByAdmin = async (req, res, next) => {
         }
 
         const user = response.data.dataValues;
-            const token = jwt.sign(
-              { id: user.id, email: user.email },
-              process.env.JWT_SECRET,
-              { expiresIn: "30d" }
-            );
+        const token = jwt.sign(
+          { id: user.id, email: user.email },
+          process.env.JWT_SECRET,
+          { expiresIn: "30d" }
+        );
 
-            return res.status(201).json({
-              success: true,
-              message: "User registered successfully by Admin.",
-              token: token + "Fitnest" + user.id,
-            });
+        return res.status(201).json({
+          success: true,
+          message: "User registered successfully by Admin.",
+          token: token + "Fitnest" + user.id,
+        });
 
       });
     };
-    
-      const selectQuery = `
+
+    const selectQuery = `
         SELECT email 
         FROM users 
         WHERE email LIKE 'user%@gmail.com' 
@@ -588,19 +589,19 @@ const dummyregisterUserByAdmin = async (req, res, next) => {
         LIMIT 1
       `;
 
-      sqlService.query(selectQuery, async (emailCheckResult) => {
-        let newEmail = "user1@gmail.com";
-        console.log("email res ; ", emailCheckResult)
-        if (emailCheckResult.success && emailCheckResult.data && emailCheckResult.data.length > 0) {
-          const lastEmail = emailCheckResult.data[0].email;
-          const match = lastEmail.match(/user(\d+)@gmail\.com/);
-          const counter = match ? parseInt(match[1]) + 1 : 1;
-          newEmail = `user${counter}@gmail.com`;
-        }
+    sqlService.query(selectQuery, async (emailCheckResult) => {
+      let newEmail = "user1@gmail.com";
+      console.log("email res ; ", emailCheckResult)
+      if (emailCheckResult.success && emailCheckResult.data && emailCheckResult.data.length > 0) {
+        const lastEmail = emailCheckResult.data[0].email;
+        const match = lastEmail.match(/user(\d+)@gmail\.com/);
+        const counter = match ? parseInt(match[1]) + 1 : 1;
+        newEmail = `user${counter}@gmail.com`;
+      }
 
-        await insertUser(newEmail);
-      });
-    
+      await insertUser(newEmail);
+    });
+
   } catch (error) {
     next(error);
   }
@@ -1035,7 +1036,7 @@ const getActiveCustomerById = async (req, res, next) => {
         message: "User ID is required",
       });
     }
- 
+
     // Query to fetch active customer by userId
     // let query = `SELECT * FROM users WHERE id = "${userId}" AND userType = 'Customer' AND isActive = 1 LIMIT 1;`;
     let query = `SELECT u.*, 
@@ -2296,15 +2297,18 @@ const buyMembershipPlan = async (req, res) => {
       admissionFee
     } = req.body;
 
+    console.log("calllingl... ", req.body);
+
+
     // Validation
     if (planType === "subs-plan") {
-      if (!userId || !membershipPlansId || !amountPaid || !paymentStatus || !selectedDuration || !monthQty ) {
+      if (!userId || !membershipPlansId || !amountPaid || !paymentStatus || !selectedDuration || !monthQty) {
         return res.status(400).json({ message: "All fields are required" });
       }
     }
 
     if (planType === "visitor-plan") {
-      if (!userId || !membershipPlansId || !visitorAmountPaid || !paymentStatus || !daysQty ) {
+      if (!userId || !membershipPlansId || !visitorAmountPaid || !paymentStatus || !daysQty) {
         return res.status(400).json({ message: "All fields are required" });
       }
     }
@@ -2378,32 +2382,32 @@ const buyMembershipPlan = async (req, res) => {
 
         if (devices.length === 0) {
           return res.send({
-            success: true, 
+            success: true,
             message: 'No device found!'
           })
         }
 
-        // Register user on devices
-        const registerPromises = devices.map((device) => {
-          return registerUserOnDevices([device], userData);
-        });
+        // // Register user on devices
+        // const registerPromises = devices.map((device) => {
+        //   return registerUserOnDevices([device], userData);
+        // });
 
-        const registrationResults = (await Promise.all(registerPromises)).flat();
+        // const registrationResults = (await Promise.all(registerPromises)).flat();
 
-        const allSuccess = registrationResults.every((r) => r.success);
-        console.log("allSuccess...", allSuccess);
+        // const allSuccess = registrationResults.every((r) => r.success);
+        // console.log("allSuccess...", allSuccess);
 
-        if (!allSuccess) {
-          const failedDevices = registrationResults
-            .filter(r => !r.success)
-            .map(r => r.deviceId || 'Unknown Device');
+        // if (!allSuccess) {
+        //   const failedDevices = registrationResults
+        //     .filter(r => !r.success)
+        //     .map(r => r.deviceId || 'Unknown Device');
 
-          return res.send({
-            success: false,
-            message: "Device registration failed!",
-            failedDevices
-          });
-        }
+        //   return res.send({
+        //     success: false,
+        //     message: "Device registration failed!",
+        //     failedDevices
+        //   });
+        // }
 
         // All devices registered, now save to DB
         const purchaseData = {
@@ -2438,6 +2442,8 @@ const buyMembershipPlan = async (req, res) => {
           };
 
           const saveResult = await saveOrUpdate();
+          console.log("saveResult..", saveResult);
+
           if (!saveResult.success) {
             return res.status(500).json({ success: false, message: "Error saving membership purchase" });
           }
@@ -2458,23 +2464,25 @@ const buyMembershipPlan = async (req, res) => {
           };
 
           sqlService.insert(sqlService.MembershipPurchasesHistories, historyData, async (historyInsertResponse) => {
+
             if (!historyInsertResponse.success) {
               console.error("Failed to log transaction in history:", historyInsertResponse.message);
             }
             else {
               let insertData = {
-                  id : historyInsertResponse.data.id,
-                  userId : historyInsertResponse.data.userId,
-                  membershipPlansId : historyInsertResponse.data.membershipPlansId,
-                  amountPaid ,
-                  status : ''
-                };
-              if(amountPaid != checkAmount){
-                 insertData.status = 'incomplete'
+                id: historyInsertResponse.data.dataValues.id,
+                userId: historyInsertResponse.data.dataValues.userId,
+                membershipPlansId: historyInsertResponse.data.dataValues.membershipPlansId,
+                amountPaid,
+                status: ''
+              };
+              if (amountPaid != checkAmount) {
+                insertData.status = 'incomplete'
               }
               else {
-                 insertData.status = 'complete'
+                insertData.status = 'complete'
               }
+
               await insertReceivedAmount(insertData);
             }
           });
@@ -2508,7 +2516,7 @@ const buyMembershipPlan = async (req, res) => {
               ? "Devices registered and membership updated"
               : "Devices registered and membership purchased",
             data: saveResult.data,
-            invoice : invoicePayload,
+            invoice: invoicePayload,
             registeredDevices: devices.map((d) => d.deviceName || d.id),
           });
         });
@@ -2525,180 +2533,181 @@ const buyMembershipPlan = async (req, res) => {
 
 
 const insertReceivedAmount = async (insertData) => {
-  return new Promise((resolve) => { 
-     const postObj = {
-      purchaseHistoryId : insertData.id,
-      userId : insertData.userId,
-      membershipPlansId : insertData.membershipPlansId,
-      receivedAmount : insertData.amountPaid,
-      paymentStatus : insertData.status
-     }
-     sqlService.insert(sqlService.MembershipPurchasedReceivedAmounts,postObj,resolve)
-     console.log("resolve : ", resolve);
+
+  return new Promise((resolve) => {
+    const postObj = {
+      purchaseHistoryId: insertData.id,
+      userId: insertData.userId,
+      membershipPlansId: insertData.membershipPlansId,
+      receivedAmount: insertData.amountPaid,
+      paymentStatus: insertData.status
+    }
+    sqlService.insert(sqlService.MembershipPurchasedInstallmentAmounts, postObj, resolve)
+    console.log("resolve : ", resolve);
   })
 };
 
-const updateReceivedAmount = async(req, res)=>{
-  const { purchaseHistoryId,membershipPlansId, userId, payAmount , purchaseDate} = req.body;
+const updateReceivedAmount = async (req, res) => {
+  const { purchaseHistoryId, membershipPlansId, userId, payAmount, purchaseDate } = req.body;
   console.log("body : ", req.body)
-  if(!purchaseHistoryId || !membershipPlansId || !userId || !payAmount || !purchaseDate){
-    return res.status(400).json({success:false, message:"all fields are required"})
+  if (!purchaseHistoryId || !membershipPlansId || !userId || !payAmount || !purchaseDate) {
+    return res.status(400).json({ success: false, message: "all fields are required" })
   }
-  if(payAmount==='undefined' || payAmount===null)  return res.status(400).json({success:false, message:"amount is required"}) 
-  try{
-    let planData;  
-    let planPrice ;
+  if (payAmount === 'undefined' || payAmount === null) return res.status(400).json({ success: false, message: "amount is required" })
+  try {
+    let planData;
+    let planPrice;
     let amountPaid;
 
-     let planDetailQuery = `SELECT * FROM membershipPlans where id=${membershipPlansId}`;
-     sqlService.query(planDetailQuery,planDetailRes=>{
-            console.log("planDetailQuery : ", planDetailRes.data);
-            if(!planDetailRes.success){
-              return res.status(500).json({ success: false, message: "database error" }); 
-            }
-            planData = planDetailRes.data[0];
-             const formatToLocalDateTime = (date) => {
-            
-              const parts = date.split('T');
-              const datePart = parts[0];
-              const timePart = parts[1].split('.')[0];  
-              const final = `${datePart} ${timePart}`;
-              console.log(final); 
-                return final;
-            };
+    let planDetailQuery = `SELECT * FROM membershipPlans where id=${membershipPlansId}`;
+    sqlService.query(planDetailQuery, planDetailRes => {
+      console.log("planDetailQuery : ", planDetailRes.data);
+      if (!planDetailRes.success) {
+        return res.status(500).json({ success: false, message: "database error" });
+      }
+      planData = planDetailRes.data[0];
+      const formatToLocalDateTime = (date) => {
 
-            const formattedDate = formatToLocalDateTime(purchaseDate);
-            const purchasedPlanQuery = `Select * from membershipPurchases where userId = ${userId} AND purchaseDate = '${formattedDate}'`;
-            sqlService.query(purchasedPlanQuery, purchasedPlanRes=>{
-            // console.log("planDetailQuery res :  ", purchasedPlanRes);
-            if(!purchasedPlanRes.success || purchasedPlanRes.data.length == 0){
-              return res.json({ success: false, message: "no data found or something went wrong" });
-            }
-          
-            let purchasedPlanData = purchasedPlanRes.data[0]; 
-            if (purchasedPlanData.selectedDuration === "monthly") {
-              planPrice = purchasedPlanData.monthQty * planData.monthlyPrice;
-            } 
-            else if(purchasedPlanData.selectedDuration === "quarterly") {
-              planPrice = planData.quarterlyPrice;
-            }
-            else planPrice = planData.yearlyPrice;
+        const parts = date.split('T');
+        const datePart = parts[0];
+        const timePart = parts[1].split('.')[0];
+        const final = `${datePart} ${timePart}`;
+        console.log(final);
+        return final;
+      };
 
-            if(purchasedPlanData.admissionFee !== 0){
-               planPrice =  parseFloat(planPrice) + parseFloat(purchasedPlanData.admissionFee);
-            }
+      const formattedDate = formatToLocalDateTime(purchaseDate);
+      const purchasedPlanQuery = `Select * from membershipPurchases where userId = ${userId} AND purchaseDate = '${formattedDate}'`;
+      sqlService.query(purchasedPlanQuery, purchasedPlanRes => {
+        // console.log("planDetailQuery res :  ", purchasedPlanRes);
+        if (!purchasedPlanRes.success || purchasedPlanRes.data.length == 0) {
+          return res.json({ success: false, message: "no data found or something went wrong" });
+        }
 
-            amountPaid = purchasedPlanData.amountPaid ;
-            console.log("amount paid ; ", amountPaid)
-            amountDue = parseFloat(planPrice) - parseFloat(amountPaid);
+        let purchasedPlanData = purchasedPlanRes.data[0];
+        if (purchasedPlanData.selectedDuration === "monthly") {
+          planPrice = purchasedPlanData.monthQty * planData.monthlyPrice;
+        }
+        else if (purchasedPlanData.selectedDuration === "quarterly") {
+          planPrice = planData.quarterlyPrice;
+        }
+        else planPrice = planData.yearlyPrice;
 
-            if(amountDue == 0) {
-              return res.json({success : false, message:"No Amount dues"});
-            }
-            const newPaidAmount = parseFloat(amountPaid) + parseFloat(payAmount);
+        if (purchasedPlanData.admissionFee !== 0) {
+          planPrice = parseFloat(planPrice) + parseFloat(purchasedPlanData.admissionFee);
+        }
 
-            if(planPrice < newPaidAmount)  return res.json({success : false,message:"Invalid amount"});
+        amountPaid = purchasedPlanData.amountPaid;
+        console.log("amount paid ; ", amountPaid)
+        amountDue = parseFloat(planPrice) - parseFloat(amountPaid);
 
-            const updateObj = {
-              amountPaid : newPaidAmount
-            }
-            console.log("new paid amoint ; ", newPaidAmount);
-            sqlService.update(sqlService.MembershipPurchases,updateObj,{id : purchasedPlanData.id},async updateRes => {
-              console.log("update response : ", updateRes);
-              if(!updateRes.success){
-                return res.status(500).json({ success: false, message: "database error during amount update" });
-              }
-            })
+        if (amountDue == 0) {
+          return res.json({ success: false, message: "No Amount dues" });
+        }
+        const newPaidAmount = parseFloat(amountPaid) + parseFloat(payAmount);
 
-            sqlService.update(sqlService.MembershipPurchasesHistories, updateObj, {id : purchaseHistoryId}, historyUpdateRes=>{
-              console.log("update res : ", historyUpdateRes)
-                if(!historyUpdateRes.success) return res.status(500).json({ success: false, message: "database error during amount update" });
-                 let insertData = {
-                  id : purchaseHistoryId,
-                  userId : userId,
-                  membershipPlansId : membershipPlansId,
-                  amountPaid : payAmount ,
-                  status : ''
-                 };
-                  if(newPaidAmount != planPrice){
-                    insertData.status = 'incomplete'
-                  }
-                  else {
-                    insertData.status = 'complete'
-                  }
-                  insertReceivedAmount(insertData);
-                  return res.status(200).send({success:true, message:"amount updated successfully"})
-              })
-             
-            })         
-          })
+        if (planPrice < newPaidAmount) return res.json({ success: false, message: "Invalid amount" });
+
+        const updateObj = {
+          amountPaid: newPaidAmount
+        }
+        console.log("new paid amoint ; ", newPaidAmount);
+        sqlService.update(sqlService.MembershipPurchases, updateObj, { id: purchasedPlanData.id }, async updateRes => {
+          console.log("update response : ", updateRes);
+          if (!updateRes.success) {
+            return res.status(500).json({ success: false, message: "database error during amount update" });
+          }
+        })
+
+        sqlService.update(sqlService.MembershipPurchasesHistories, updateObj, { id: purchaseHistoryId }, historyUpdateRes => {
+          if (!historyUpdateRes.success) return res.status(500).json({ success: false, message: "database error during amount update" });
+          let insertData = {
+            id: purchaseHistoryId,
+            userId: userId,
+            membershipPlansId: membershipPlansId,
+            amountPaid: payAmount,
+            status: ''
+          };
+          if (newPaidAmount != planPrice) {
+            insertData.status = 'incomplete'
+          }
+          else {
+            insertData.status = 'complete'
+          }
+
+          insertReceivedAmount(insertData);
+          return res.status(200).send({ success: true, message: "amount updated successfully" })
+        })
+
+      })
+    })
   }
-  catch (error){
-      return res.status(500).json({success:false, message:"something went wrong", error: error.message,});
+  catch (error) {
+    return res.status(500).json({ success: false, message: "something went wrong", error: error.message, });
   }
 };
 
-const getDueAmount = async(req,res) =>{
-  const {userId} = req.params;
-  const { purchaseDate, membershipPlansId} = req.query;
-  try{
-     let planDetailQuery = `SELECT * FROM membershipPlans WHERE membershipPlans.id = ${membershipPlansId}`;
-     sqlService.query(planDetailQuery,planDetailRes=>{
-            // console.log("planDetailQuery : ", planDetailRes.data);
-            if(!planDetailRes.success){
-              return res.status(500).json({ success: false, message: "database error" }); 
-            }
-            planData = planDetailRes.data[0];
-              const formatToLocalDateTime = (date) => {
-            
-              const parts = date.split('T');
-              const datePart = parts[0];
-              const timePart = parts[1].split('.')[0];  
-              const final = `${datePart} ${timePart}`;
-              console.log(final); 
-                return final;
-            };
+const getDueAmount = async (req, res) => {
+  const { userId } = req.params;
+  const { purchaseDate, membershipPlansId } = req.query;
+  try {
+    let planDetailQuery = `SELECT * FROM membershipPlans WHERE membershipPlans.id = ${membershipPlansId}`;
+    sqlService.query(planDetailQuery, planDetailRes => {
+      // console.log("planDetailQuery : ", planDetailRes.data);
+      if (!planDetailRes.success) {
+        return res.status(500).json({ success: false, message: "database error" });
+      }
+      planData = planDetailRes.data[0];
+      const formatToLocalDateTime = (date) => {
 
-            const formattedDate = formatToLocalDateTime(purchaseDate);
+        const parts = date.split('T');
+        const datePart = parts[0];
+        const timePart = parts[1].split('.')[0];
+        const final = `${datePart} ${timePart}`;
+        console.log(final);
+        return final;
+      };
 
-            const purchasedPlanQuery = `SELECT * FROM membershipPurchases WHERE userId = ${userId} AND purchaseDate = '${formattedDate}'`;
-            // console.log("query : ", purchasedPlanQuery)
-            sqlService.query(purchasedPlanQuery, purchasedPlanRes=>{
-            // console.log("purchased plan res :  ", purchasedPlanRes);
-            if(!purchasedPlanRes.success || purchasedPlanRes.data.length == 0){
-              return res.json({ success: false, message: "no data found or something went wrong" });
-            }
+      const formattedDate = formatToLocalDateTime(purchaseDate);
 
-           
-          
-            let purchasedPlanData = purchasedPlanRes.data[0]; 
-            if (purchasedPlanData.selectedDuration === "monthly") {
-              planPrice = purchasedPlanData.monthQty * planData.monthlyPrice;
-            } 
-            else if(purchasedPlanData.selectedDuration === "quarterly") {
-              planPrice = planData.quarterlyPrice;
-            }
-            else planPrice = planData.yearlyPrice;
+      const purchasedPlanQuery = `SELECT * FROM membershipPurchases WHERE userId = ${userId} AND purchaseDate = '${formattedDate}'`;
+      // console.log("query : ", purchasedPlanQuery)
+      sqlService.query(purchasedPlanQuery, purchasedPlanRes => {
+        // console.log("purchased plan res :  ", purchasedPlanRes);
+        if (!purchasedPlanRes.success || purchasedPlanRes.data.length == 0) {
+          return res.json({ success: false, message: "no data found or something went wrong" });
+        }
 
-            if(purchasedPlanData.admissionFee !== 0){
-               planPrice = parseFloat(planPrice) +  parseFloat(purchasedPlanData.admissionFee);
-            }
 
-            amountPaid = purchasedPlanData.amountPaid ;
 
-            amountDue = parseFloat(planPrice) - parseFloat(amountPaid);
+        let purchasedPlanData = purchasedPlanRes.data[0];
+        if (purchasedPlanData.selectedDuration === "monthly") {
+          planPrice = purchasedPlanData.monthQty * planData.monthlyPrice;
+        }
+        else if (purchasedPlanData.selectedDuration === "quarterly") {
+          planPrice = planData.quarterlyPrice;
+        }
+        else planPrice = planData.yearlyPrice;
 
-            if(amountDue == 0) {
-              return res.json({success:false ,message:"No dues Amount"});
-            }
+        if (purchasedPlanData.admissionFee !== 0) {
+          planPrice = parseFloat(planPrice) + parseFloat(purchasedPlanData.admissionFee);
+        }
 
-            return res.status(200).json({success:true,data:{amountDue,amountPaid, planPrice,purchasedPlanData}})
-            
-            })         
-     })
+        amountPaid = purchasedPlanData.amountPaid;
+
+        amountDue = parseFloat(planPrice) - parseFloat(amountPaid);
+
+        if (amountDue == 0) {
+          return res.json({ success: false, message: "No dues Amount" });
+        }
+
+        return res.status(200).json({ success: true, data: { amountDue, amountPaid, planPrice, purchasedPlanData } })
+
+      })
+    })
   }
-  catch(error){
-    return res.status(500).json({status:false, message:"server error"});
+  catch (error) {
+    return res.status(500).json({ status: false, message: "server error" });
   }
 }
 
@@ -2769,7 +2778,7 @@ const viewPlansById = async (req, res) => {
 const getActiveCustomers = async (req, res, next) => {
   try {
     const { adminId } = req.params;
-    
+
 
     const { searchTerm } = req.query;
 
@@ -2806,7 +2815,7 @@ const getActiveCustomers = async (req, res, next) => {
     AND u.createdByAdmin = ${adminId}
     AND u.status = 'active'
     `;
-    
+
     // Apply searchTerm filter for phoneNo and name
     // Helper function to check if a string is a number
     function isDigit(str) {
@@ -2815,14 +2824,14 @@ const getActiveCustomers = async (req, res, next) => {
 
     if (searchTerm) {
       const sanitizedSearch = searchTerm.trim();
-      
-      if( isDigit(sanitizedSearch)) {
-      query += ` AND ( u.employeeNo LIKE '%${sanitizedSearch}%')`;
-      countQuery += ` AND ( u.employeeNo LIKE '%${sanitizedSearch}%')`; 
+
+      if (isDigit(sanitizedSearch)) {
+        query += ` AND ( u.employeeNo LIKE '%${sanitizedSearch}%')`;
+        countQuery += ` AND ( u.employeeNo LIKE '%${sanitizedSearch}%')`;
       }
       else {
-      query += ` AND (u.name LIKE '%${sanitizedSearch}%'  OR u.employeeNo LIKE '%${sanitizedSearch}%' OR u.email LIKE '%${sanitizedSearch}%')`;
-      countQuery += ` AND (u.name LIKE '%${sanitizedSearch}%'  OR u.employeeNo LIKE '%${sanitizedSearch}%' OR u.email LIKE '%${sanitizedSearch}%')`; 
+        query += ` AND (u.name LIKE '%${sanitizedSearch}%'  OR u.employeeNo LIKE '%${sanitizedSearch}%' OR u.email LIKE '%${sanitizedSearch}%')`;
+        countQuery += ` AND (u.name LIKE '%${sanitizedSearch}%'  OR u.employeeNo LIKE '%${sanitizedSearch}%' OR u.email LIKE '%${sanitizedSearch}%')`;
       }
     }
 
@@ -2848,18 +2857,18 @@ const getActiveCustomers = async (req, res, next) => {
         });
       }
 
-      sqlService.query(countQuery, (countResponse)=>{
-         if (!response.error) {
+      sqlService.query(countQuery, (countResponse) => {
+        if (!response.error) {
           return res.status(200).json({
-          success: true,
-          message: "Customers retrieved successfully.",
-          data: response.data,
-          totalData: countResponse.data[0].total,
-          page: page,
-          limit: limit,
-          totalPages: Math.ceil(countResponse.data[0].total / limit),
-        });
-      }
+            success: true,
+            message: "Customers retrieved successfully.",
+            data: response.data,
+            totalData: countResponse.data[0].total,
+            page: page,
+            limit: limit,
+            totalPages: Math.ceil(countResponse.data[0].total / limit),
+          });
+        }
       })
 
       // return res.status(200).json({
@@ -3362,7 +3371,7 @@ const getSalaryHistories = (req, res) => {
 
 const getIndividualSalaryHistories = (req, res) => {
   const { userId } = req.query;
-  
+
   if (!userId) {
     return res.status(400).json({ success: false, message: 'userId is required' });
   }
@@ -3404,7 +3413,7 @@ const getIndividualSalaryHistories = (req, res) => {
 
     const totalAmount = response.data.reduce((total, item) => total + parseFloat(item.calculatedAmount || 0), 0);
 
-   
+
 
     return res.json({ success: true, data: response.data, totalAmount });
   });
@@ -3518,7 +3527,7 @@ const getMembershipPaymentHistory = async (req, res) => {
     }));
     let total = 0;
 
-    response.data.forEach(item=> total =  parseFloat(item.amountPaid) + parseFloat(total) )
+    response.data.forEach(item => total = parseFloat(item.amountPaid) + parseFloat(total))
 
     let totalAmount = total;
     return res.json({ success: true, data, totalAmount });
@@ -3628,7 +3637,7 @@ const getMembershipInstallmentPayments = async (req, res) => {
       purchaseHistoryId: item.purchaseHistoryId,
       membershipPlansId: item.membershipPlansId,
       purchaseDate: item.purchaseDate,
-      paymentStatus : item.paymentStatus
+      paymentStatus: item.paymentStatus
     }));
 
     return res.json({ success: true, data });
@@ -4046,7 +4055,7 @@ const registerUserOnDevice = async (device, userData) => {
       console.log(`✅ User registered successfully on device ${device.purpose}`);
       return { success: true, deviceName: device.purpose };
     }
-    console.log("result.subStatusCode : " , result.subStatusCode)
+    console.log("result.subStatusCode : ", result.subStatusCode)
     // If user already exists, attempt modification
     if (result.subStatusCode === 'employeeNoAlreadyExist') {
       console.log(`🔁 User exists. Attempting to modify user ${userData.userId} on device ${device.deviceName}...`);
@@ -4286,7 +4295,7 @@ const registerUserOnDevice = async (device, userData) => {
 // };
 
 const fetchAttendanceData = async (req, res) => {
-  
+
   try {
     const { adminId, userType, deviceId } = req.body;
     const { fromDate, toDate, userId } = req.query;
@@ -4341,7 +4350,7 @@ const fetchAttendanceData = async (req, res) => {
     const userName = deviceResponse.data[0].username;
     const password = deviceResponse.data[0].password;
     const ipAddress = deviceResponse.data[0].ipAddress;
-    
+
     const url = `http://${ipAddress}/ISAPI/AccessControl/AcsEvent?format=json`;
 
 
@@ -4389,7 +4398,7 @@ const fetchAttendanceData = async (req, res) => {
       hasMore = responseStatusStrg === "MORE" && currentPosition < totalMatches;
       console.log(" totalAttendanceList length : ", totalAttendanceList.length)
     }
-    
+
     const attendanceMap = {};
     const employeeNoArray = [];
     for (const info of totalAttendanceList) {
@@ -4403,11 +4412,11 @@ const fetchAttendanceData = async (req, res) => {
       if (!attendanceMap[key] || new Date(info.time) < new Date(attendanceMap[key].time)) {
         // console.log("key : ", key);
         attendanceMap[key] = info;
-        
+
         employeeNoJson[empId] = empId;
       }
     }
-    
+
     // const filePath = path.join(__dirname, '../data/employeeNoJson.json');
 
     // fs.writeFile(filePath, JSON.stringify(employeeNoJson, null, 2), (err) => {
@@ -4439,12 +4448,12 @@ const fetchAttendanceData = async (req, res) => {
         AND m.purchaseDate <= '${endDate}'
       ` : ''}
     `;
-        // console.log("userQuery : ", usersQuery)
+    // console.log("userQuery : ", usersQuery)
     if (userId) usersQuery += ` AND u.id = ${userId}`;
 
     const usersResponse = await new Promise((resolve, reject) => {
       sqlService.query(usersQuery, (result) => {
-      
+
         // console.log("result : ", result);
         if (!result.success) return reject(new Error("Failed to fetch users."));
         resolve(result);
@@ -4467,7 +4476,7 @@ const fetchAttendanceData = async (req, res) => {
 
       const validFrom = userType === 'Customer' ? moment(user.purchaseDate).startOf("day") : start.clone();
       const validTo = userType === 'Customer' ? moment(user.expiryDate).endOf("day") : end.clone();
-      
+
       for (let date = moment(start); date.isSameOrBefore(end, "day"); date.add(1, "day")) {
         // console.log("date in for loop : ", date);
         const dateStr = date.format("YYYY-MM-DD");
@@ -4476,7 +4485,7 @@ const fetchAttendanceData = async (req, res) => {
         const key = `${empId}-${dateStr}`;
         // console.log("key 2 : ", key);
         const existing = attendanceMap[key];
-        if(existing ){
+        if (existing) {
           cnt++;
         }
         else cnt2++;
@@ -4492,7 +4501,7 @@ const fetchAttendanceData = async (req, res) => {
         const checkQuery =
           ` SELECT * FROM attendances WHERE userId = '${userId}' AND DATE(time) = '${dateStr}' AND adminId = '${adminId}' LIMIT 1`
           ;
-          // console.log("checkQuery : ", checkQuery);
+        // console.log("checkQuery : ", checkQuery);
 
         const attendanceResult = await new Promise((resolve, reject) => {
           sqlService.query(checkQuery, (result) => {
@@ -4521,12 +4530,12 @@ const fetchAttendanceData = async (req, res) => {
             deviceId: deviceId
           };
           // console.log("insertObj...", insertObj);
-         
+
 
           insertPromises.push(new Promise((resolve, reject) => {
             sqlService.insert(sqlService.Attendances, insertObj, (insertResponse) => {
               // console.log("insertResponse", insertResponse);
-              
+
               if (!insertResponse.success) return reject(new Error("Failed to insert attendance record."));
               resolve(insertResponse);
             });
@@ -4594,8 +4603,8 @@ const fetchTodaysAttendance = async (req, res) => {
 
   try {
     sqlService.query(query, (response) => {
-      if(!response.success){
-        return res.json({success:false, message:"error while getting attendance."})
+      if (!response.success) {
+        return res.json({ success: false, message: "error while getting attendance." })
       }
       res.status(200).json({
         success: true,
@@ -4882,7 +4891,7 @@ const getTodaysCollection = async (req, res) => {
     WHERE mp.userId = ${adminId}
     AND DATE(mph.purchaseDate) = CURDATE()
   `;
-  
+
   sqlService.query(query, (response) => {
 
     if (!response.success) {
@@ -5121,7 +5130,7 @@ const getActiveAdmins = async (req, res, next) => {
 
 
 // create diet plans 
-const createPlan = (req, res) => {
+const uplaodDietPlan = (req, res) => {
   upload(req, res, (err) => {
     if (err) {
       return res.status(400).json({ success: false, message: err.message });
@@ -5184,6 +5193,193 @@ const createPlan = (req, res) => {
       });
     }
   });
+};
+
+// Reception view
+const requestSubscriptionAssignment = async (req, res) => {
+  try {
+    const {
+      userId,
+      requestedBy,
+      adminId,
+      membershipPlansId,
+      selectedDuration,
+      amountPaid,
+      monthQty,
+      planType,
+      email,
+      phoneNo,
+      name,
+      admissionFee,
+    } = req.body;
+
+    console.log("req.body.", req.body);
+    
+
+    if (!userId || !requestedBy || !adminId || !membershipPlansId || !amountPaid || !monthQty || !selectedDuration || !name || !email || !planType || !phoneNo) {
+      return res.status(400).json({ success: false, message: 'Missing required fieldsss' });
+    }
+
+    let requestObj = {
+      userId,
+      requestedBy,
+      adminId,
+      membershipPlansId,
+      selectedDuration,
+      amountPaid,
+      monthQty,
+      planType,
+      email,
+      phoneNo,
+      name,
+      admissionFee,
+      status: 'pending', // default value
+      paymentStatus: 'true'
+    };
+
+    // Insert into subscriptionAssignmentRequests table
+    sqlService.insert(sqlService.SubscriptionAssignmentRequests, requestObj, function (response) {
+      if (response.success) {
+        res.status(201).json({
+          success: true,
+          message: 'Subscription assignment request submitted successfully',
+          data: response.data,
+        });
+      } else {
+        res.status(500).json({
+          success: false,
+          message: 'Failed to create request',
+          error: response.error,
+        });
+      }
+    });
+
+  } catch (error) {
+    return res.status(500).json({ success: false, message: 'Internal server error', error: error.message });
+  }
+};
+
+const listPendingSubscriptionRequests = async (req, res) => {
+  try {
+    const { adminId } = req.params;
+
+    let query = `SELECT * FROM subscriptionAssignmentRequests WHERE adminId=${adminId} AND status='pending'`
+    sqlService.query(query, (response) => {
+
+      if (response.success) {
+        return res.status(200).json({ success: true, data: response });
+      } else {
+        res.status(500).json({
+          success: false,
+          message: 'No request!',
+        });
+      }
+    })
+  } catch (error) {
+    return res.status(500).json({ success: false, message: 'Error fetching requests', error: error.message });
+  }
+};
+
+const approvePendingSubscriptionRequests = async (req, res) => {
+  try {
+    const { requestId } = req.params;
+
+    if (!requestId) {
+      return res.status(400).json({ success: false, message: 'Request ID is required' });
+    }
+
+    let query = `SELECT * FROM subscriptionAssignmentRequests WHERE id=${requestId} LIMIT 1`;
+    sqlService.query(query, async (response) => {
+
+      if (response.success) {
+
+        const request = response.data[0];
+
+        if (request.status !== 'pending') {
+          return res.status(400).json({ success: false, message: 'Request already processed' });
+        }
+
+        // Destructure necessary data
+        const {
+          planType,
+          userId,
+          membershipPlansId,
+          amountPaid,
+          selectedDuration,
+          monthQty,
+          name,
+          phoneNo,
+          email,
+          adminId,
+          admissionFee
+        } = request;
+
+        // Construct payload
+        const payload = {
+          planType,
+          userId,
+          membershipPlansId,
+          amountPaid,
+          paymentStatus: true,
+          selectedDuration,
+          monthQty,
+          visitorAmountPaid: null, // if not applicable
+          daysQty: null,            // if not applicable
+          name,
+          phoneNo,
+          email,
+          adminId,
+          admissionFee
+        };
+
+        // Call /buy-membership-plan internally
+        try {
+          const buyPlanRes = await axios.post('http://localhost:8000/api/fitnest/buy-membership-plan', payload); // replace PORT
+
+          if (buyPlanRes.data.success) {
+            // Update subscriptionAssignmentRequests status to approved
+            sqlService.update(
+              sqlService.SubscriptionAssignmentRequests,
+              { status: 'approved' },
+              { id: requestId },
+              (updateRes) => {
+                return res.status(200).json({
+                  success: true,
+                  message: 'Subscription approved and assigned successfully',
+                });
+              }
+            );
+          } else {
+            return res.status(500).json({
+              success: false,
+              message: 'Failed to assign plan',
+              error: buyPlanRes.data.message,
+            });
+          }
+        } catch (err) {
+          console.log("err..", err);
+
+          return res.status(500).json({
+            success: false,
+            message: 'Internal call to buy-membership-plan failed',
+            error: err.message,
+          });
+        }
+
+      } else {
+        return res.status(404).json({
+          success: false,
+          message: 'No subscription request found',
+        });
+      }
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: 'Error in approval process',
+      error: error.message,
+    });
+  }
 };
 
 
@@ -5260,5 +5456,8 @@ module.exports = {
   getDueAmount,
   registerAllUsers,
   dummyregisterUserByAdmin,
-  createPlan
+  uplaodDietPlan,
+  requestSubscriptionAssignment,
+  listPendingSubscriptionRequests,
+  approvePendingSubscriptionRequests
 }

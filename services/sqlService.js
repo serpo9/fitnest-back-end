@@ -373,23 +373,23 @@ const SubscriptionAssignmentRequests = sequelize.define('subscriptionAssignmentR
 	  type: Sequelize.INTEGER,
 	},
 	amountPaid: {
-	  type: Sequelize.DECIMAL(10, 2),
+	  type: Sequelize.STRING,
 	},
 	admissionFee: {
-	  type: Sequelize.DECIMAL(10, 2),
+	  type: Sequelize.STRING,
+	},
+	status: {
+	  type: Sequelize.STRING,
+	  defaultValue: 'pending',
 	},
 	paymentStatus: {
-	  type: Sequelize.BOOLEAN,
-	  defaultValue: false,
+	  type: Sequelize.STRING,
+	  defaultValue: 'false',
 	},
 	adminId: {
 	  type: Sequelize.INTEGER,
 	  allowNull: false,
 	}
-  }, {
-	timestamps: true,
-	createdAt: 'createdAt',
-	updatedAt: false
   });
   
 

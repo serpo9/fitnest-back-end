@@ -123,7 +123,7 @@ router.get('/get-individual-attendance/:adminId/:userId', gymController.getIndiv
 
 // Diet 
 router.post('/create-diet', gymController.createDietPlan);
-router.post('/create-plan', gymController.createPlan);
+router.post('/create-plan', gymController.uplaodDietPlan);
 router.get('/view-diet/:trainerId', gymController.getDietPlansByTrainer);
 
 router.post('/register-admin', gymController.registerAdminBySuperAdmin);
@@ -131,5 +131,10 @@ router.get('/view-all-admin', gymController.getActiveAdmins);
 router.post('/update-more-profile-info', userController.updateMoreProfileInfo);
 router.get('/get-userprofile/:userId', userController.getUserProfile);
 router.get('/get-dietplan/:userId', userController.getUserDietPlans);
+
+// Receptionist
+router.post('/send-request-for-approval', gymController.requestSubscriptionAssignment);
+router.get('/get-subs-approval-list/:adminId', gymController.listPendingSubscriptionRequests);
+router.post('/approve-subs-approval-list/:requestId', gymController.approvePendingSubscriptionRequests);
 
 module.exports = router;
