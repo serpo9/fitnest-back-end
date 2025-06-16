@@ -2564,7 +2564,7 @@ const updateReceivedAmount = async (req, res) => {
 
     let planDetailQuery = `SELECT * FROM membershipPlans where id=${membershipPlansId}`;
     sqlService.query(planDetailQuery, planDetailRes => {
-      console.log("planDetailQuery : ", planDetailRes.data);
+      // console.log("planDetailQuery : ", planDetailRes.data);
       if (!planDetailRes.success) {
         return res.status(500).json({ success: false, message: "database error" });
       }
@@ -2601,7 +2601,7 @@ const updateReceivedAmount = async (req, res) => {
         }
 
         amountPaid = purchasedPlanData.amountPaid;
-        console.log("amount paid ; ", amountPaid)
+        // console.log("amount paid ; ", amountPaid)
         amountDue = parseFloat(planPrice) - parseFloat(amountPaid);
 
         if (amountDue == 0) {
@@ -2616,7 +2616,7 @@ const updateReceivedAmount = async (req, res) => {
         }
         console.log("new paid amoint ; ", newPaidAmount);
         sqlService.update(sqlService.MembershipPurchases, updateObj, { id: purchasedPlanData.id }, async updateRes => {
-          console.log("update response : ", updateRes);
+          // console.log("update response : ", updateRes);
           if (!updateRes.success) {
             return res.status(500).json({ success: false, message: "database error during amount update" });
           }
