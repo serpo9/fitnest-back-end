@@ -7,6 +7,7 @@ const userController = require('../controllers/userController.js');
 const scheduleController = require('../controllers/scheduleController.js');
 const notificationController = require('../controllers/notificationController.js');
 const router = express.Router();
+const upload = require("../config/multer.js")
 
 router.post('/admin/batch-register', gymController.registerAllUsers);
 router.post('/dummy/batch-register', gymController.dummyregisterUserByAdmin);
@@ -35,46 +36,6 @@ router.get('/get-subscriptionplan/:adminId/:duration?', gymController.getallsubs
 router.get('/get-trainer-schedules/:trainerId', gymController.trainerSchedules);
 router.get('/get-all-trainer-schedules/:adminId', gymController.getAllTrainerSchedules);
 router.get('/get-gymname/:adminId', gymController.getAdminGymName);
-
-
-
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-      console.log("req query:", req.query);
-      const fileType = req.query.type || 'dietplan';
-  
-      // Always store under fitnestAssets/plans/dietplan
-      const uploadPath = path.join(__dirname, '..', 'fitnestAssets', 'plans', 'dietplan' ,fileType);
-  
-      // Create folder if it does not exist
-      if (!fs.existsSync(uploadPath)) {
-        fs.mkdirSync(uploadPath, { recursive: true });
-      }
-  
-      cb(null, uploadPath);
-    },
-  
-    filename: (req, file, cb) => {
-      const trainerId = req.query.trainerId || 'unknown';
-      const timestamp = Date.now();
-      const ext = path.extname(file.originalname); // .pdf
-      const safeFilename = `${trainerId}-dietplan-${timestamp}${ext}`;
-      cb(null, safeFilename);
-    }
-  });
-  
-  // Allow only PDF
-  const fileFilter = (req, file, cb) => {
-    if (file.mimetype === "application/pdf") {
-      cb(null, true);
-    } else {
-      cb(new Error("Only PDF files are allowed!"), false);
-    }
-  };
-  
-  const upload = multer({ storage, fileFilter });
-  
-  
 
 router.post('/complete-profile', userController.completeProfile);
 router.get('/user-profile/:userId', gymController.getProfileDetails);
@@ -178,7 +139,7 @@ router.get('/get-dietplan/:userId', userController.getUserDietPlans);
 router.post('/send-request-for-approval', gymController.requestSubscriptionAssignment);
 router.get('/get-subs-approval-list/:adminId', gymController.listPendingSubscriptionRequests);
 router.post('/approve-subs-approval-list/:requestId', gymController.approvePendingSubscriptionRequests);
-router.post('/upload-file', upload.single('file'), gymController.uploadFile);
+router.post('/upload-pdf', upload.single('file'), gymController.uploadFile);
 
 
 module.exports = router;

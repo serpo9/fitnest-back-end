@@ -5132,24 +5132,66 @@ const getActiveAdmins = async (req, res, next) => {
     next(error);
   }
 };
+// const uploadFile = async (req, res) => {
+//   try {
+//     console.log("Upload Request Received");
+//     console.log("Query Params:", req.query);
+//     console.log("Uploaded File:", req.file);
 
-const uploadFile = async (req, res) => {
+//     // Check if file was uploaded
+//     if (!req.file) {
+//       return res.status(400).json({
+//         error: true,
+//         message: "Please upload a PDF file using the 'file' key in FormData!",
+//       });
+//     }
+
+//     // Validate file type (redundant if multer filter is correct)
+//     if (req.file.mimetype !== 'application/pdf') {
+//       return res.status(400).json({
+//         error: true,
+//         message: "Only PDF files are allowed!",
+//       });
+//     }
+
+//     const filePath = req.file.path.replace(/\\/g, '/'); // normalize path for all OS
+
+//     return res.status(200).json({
+//       error: false,
+//       message: "File uploaded successfully!",
+//       fileName: req.file.filename,
+//       filePath,
+//       originalName: req.file.originalname,
+//       size: req.file.size,
+//     });
+
+//   } catch (error) {
+//     console.error("Upload Error:", error);
+//     return res.status(500).json({
+//       error: true,
+//       message: "Internal server error during file upload",
+//     });
+//   }
+// };
+
+// just upload pdf 
+ const uploadFile = async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: true, message: "Please upload a PDF file!" });
     }
+
     res.status(200).json({
       error: false,
-      message: "File uploaded successfully!",
-      fileName: req.file.filename,
-      filePath: req.file.path,
+      message: "PDF uploaded successfully!",
+      filename: req.file.filename,
+      path: req.file.path
     });
-  } catch (error) {
-    console.error("Upload Error:", error.message);
+  } catch (err) {
+    console.error("Upload Error:", err.message);
     res.status(500).json({ error: true, message: "Internal server error" });
   }
 };
-
 
 
 
