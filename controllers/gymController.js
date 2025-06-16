@@ -700,8 +700,6 @@ const login = async (req, res, next) => {
 const silentLogin = async (req, res, next) => {
   const { token } = req.query;
   let newToken = token.split("Fitnest")[0];
-  console.log("newToken...", newToken);
-
 
   if (!token) {
     return res
@@ -723,8 +721,6 @@ const silentLogin = async (req, res, next) => {
     const selectQuery = `SELECT * FROM users WHERE email="${userEmail}" LIMIT 1`;
 
     sqlService.query(selectQuery, (response) => {
-      console.log("response..", response);
-
       let user = response.data[0];
 
       if (!user) {
@@ -2487,10 +2483,6 @@ const buyMembershipPlan = async (req, res) => {
 
               await insertReceivedAmount(insertData);
             }
-
-            sqlService.update(sqlService.SubscriptionRequest, { status: 'approved' }, { userId, adminId }, (response) => {
-              console.log("update subs requeset.. response..", response);
-            })
           });
 
           const invoicePayload = {
@@ -2510,6 +2502,7 @@ const buyMembershipPlan = async (req, res) => {
           };
 
           try {
+            sqlService.update(sqlService.SubscriptionRequest, { status: 'approved' }, { userId, adminId }, (response) => {})
             await sendInvoice(invoicePayload);
             console.log("Invoice sent!");
           } catch (invoiceErr) {

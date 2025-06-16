@@ -204,9 +204,9 @@ const scheduleController = {
         query += ` AND sch.className LIKE '%${term}%'`;
       }
 
-      if (fromDate && toDate) {
-        query += ` AND sch.createdAt BETWEEN '${fromDate}' AND '${toDate}'`;
-      }
+      // if (fromDate && toDate) {
+      //   query += ` AND sch.createdAt BETWEEN '${fromDate}' AND '${toDate}'`;
+      // }
 
       if (status) {
         const safeStatus = status.replace(/'/g, "''");
@@ -215,6 +215,7 @@ const scheduleController = {
 
       // Run the query
       sqlService.query(query, (response) => {
+        
         if (!response.success) {
           return res.status(500).json({
             success: false,
