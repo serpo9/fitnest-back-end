@@ -780,52 +780,16 @@ const scheduleController = {
         message: "Internal server error.",
       });
     }
-  }
-  ,
-  //  requestSubscription : async (req, res, next) => {
-  //   try {
-  //     const { userId, membershipPlansId } = req.body;
-
-  //     if (!userId || !membershipPlansId) {
-  //       return res.status(400).json({
-  //         success: false,
-  //         message: "userId and membershipPlansId are required.",
-  //       });
-  //     }
-
-  //     const createObj = {
-  //       userId,
-  //       membershipPlansId,
-  //     };
-
-  //     sqlService.insert(sqlService.SubscriptionRequest, createObj, (response) => {
-  //       if (!response.success) {
-  //         return res.status(500).json({
-  //           success: false,
-  //           message: "Failed to save subscription request.",
-  //           error: response.data,
-  //         });
-  //       }
-
-  //       return res.status(201).json({
-  //         success: true,
-  //         message: "Subscription request submitted successfully.",
-  //         data: response.data,
-  //       });
-  //     });
-  //   } catch (error) {
-  //     next(error);
-  //   }
-  // }
+  },
 
   requestSubscription: async (req, res, next) => {
     try {
-      const { userId, membershipPlansId } = req.body;
+      const { userId, membershipPlansId, adminId } = req.body;
 
-      if (!userId || !membershipPlansId) {
+      if (!userId || !membershipPlansId || !adminId) {
         return res.status(400).json({
           success: false,
-          message: "userId and membershipPlansId are required.",
+          message: "All fields are required!",
         });
       }
 
@@ -849,7 +813,7 @@ const scheduleController = {
 
       // 3. Check if a request already exists
       const existingRequest = await sqlService.SubscriptionRequest.findOne({
-        where: { userId, membershipPlansId },
+        where: { userId, membershipPlansId, adminId },
       });
 
       if (existingRequest) {
@@ -860,7 +824,8 @@ const scheduleController = {
       }
 
       // 4. Insert request
-      const createObj = { userId, membershipPlansId };
+      const createObj = { userId, membershipPlansId, adminId };
+
       sqlService.insert(sqlService.SubscriptionRequest, createObj, (response) => {
         if (!response.success) {
           return res.status(500).json({
@@ -880,22 +845,26 @@ const scheduleController = {
       next(error);
     }
   },
+
   getSubscriptionRequests: async (req, res, next) => {
+    const { adminId } = req.params;
+
     try {
       const query = `
-        SELECT 
-          sr.id AS requestId,
-          u.id AS userId,
-          u.name AS username,
-          u.email,
-          u.phoneNumber,
-          mp.id AS membershipPlansId,
-          mp.planName
-        FROM subscriptionRequests sr
-        JOIN users u ON sr.userId = u.id
-        JOIN membershipPlans mp ON sr.membershipPlansId = mp.id
-        ORDER BY sr.createdAt DESC
-      `;
+      SELECT 
+        sr.id AS requestId,
+        u.id AS userId,
+        u.name AS username,
+        u.email,
+        u.phoneNumber,
+        mp.id AS membershipPlansId,
+        mp.planName
+      FROM subscriptionRequests sr
+      JOIN users u ON sr.userId = u.id
+      JOIN membershipPlans mp ON sr.membershipPlansId = mp.id
+      WHERE sr.adminId = ${adminId}
+      ORDER BY sr.createdAt DESC
+    `;
 
       sqlService.query(query, (response) => {
         if (!response.success) {
