@@ -2426,8 +2426,6 @@ const buyMembershipPlan = async (req, res) => {
           admissionFeez: admissionFee == "undefined" ? 0 : admissionFee
         };
 
-        console.log("purchaseData..", purchaseData);
-        
         const checkExistUserQuery = `SELECT * FROM membershipPurchases WHERE userId=${userId}`;
         sqlService.query(checkExistUserQuery, async (existUserResponse) => {
 
@@ -2508,7 +2506,7 @@ const buyMembershipPlan = async (req, res) => {
           };
 
           try {
-            sqlService.update(sqlService.SubscriptionRequest, { status: 'approved' }, { userId, adminId }, (response) => {})
+            sqlService.update(sqlService.SubscriptionRequest, { status: 'approved' }, { userId, adminId }, (response) => { })
             await sendInvoice(invoicePayload);
             console.log("Invoice sent!");
           } catch (invoiceErr) {
@@ -5133,7 +5131,7 @@ const getActiveAdmins = async (req, res, next) => {
 };
 
 // just upload pdf 
- const uploadFile = async (req, res) => {
+const uploadFile = async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: true, message: "Please upload a PDF file!" });
@@ -5257,11 +5255,18 @@ const listPendingSubscriptionRequests = async (req, res) => {
   try {
     const { adminId } = req.params;
 
-    let query = `SELECT * FROM subscriptionAssignmentRequests WHERE adminId=${adminId} AND status='pending'`
+    let query = `
+    SELECT 
+      sar.*, 
+      mp.planName 
+    FROM subscriptionAssignmentRequests sar
+    JOIN membershipPlans mp ON sar.membershipPlansId = mp.id
+    WHERE sar.adminId = ${adminId} AND sar.status = 'pending'
+  `;
     sqlService.query(query, (response) => {
 
       if (response.success) {
-        return res.status(200).json({ success: true, data: response });
+        return res.status(200).json({ success: true, data: response.data });
       } else {
         res.status(500).json({
           success: false,
@@ -5276,21 +5281,39 @@ const listPendingSubscriptionRequests = async (req, res) => {
 
 const approvePendingSubscriptionRequests = async (req, res) => {
   try {
-    const { requestId } = req.params;
+    const { requestId, requestAdminId } = req.body;
 
-    if (!requestId) {
-      return res.status(400).json({ success: false, message: 'Request ID is required' });
+    if (!requestId || !requestAdminId) {
+      return res.status(400).json({ success: false, message: 'Request ID and Admin ID are required' });
     }
 
+
     let query = `SELECT * FROM subscriptionAssignmentRequests WHERE id=${requestId} LIMIT 1`;
+
     sqlService.query(query, async (response) => {
 
       if (response.success) {
 
-        const request = response.data[0];
+        const request = await response.data[0];
+
+        if (!response.success || response.data.length === 0) {
+          return res.status(200).json({
+            success: false,
+            message: 'No subscription request found for the given request ID',
+          });
+        }
+        
+
+        // ✅ Ensure adminId from DB matches the one from frontend
+        if (parseInt(request.adminId) !== parseInt(requestAdminId)) {
+          return res.status(200).json({
+            success: false,
+            message: 'Unauthorized: You are not allowed to approve this request',
+          });
+        }
 
         if (request.status !== 'pending') {
-          return res.status(400).json({ success: false, message: 'Request already processed' });
+          return res.status(200).json({ success: false, message: 'Request already processed' });
         }
 
         // Destructure necessary data
@@ -5344,7 +5367,7 @@ const approvePendingSubscriptionRequests = async (req, res) => {
               }
             );
           } else {
-            return res.status(500).json({
+            return res.status(200).json({
               success: false,
               message: 'Failed to assign plan',
               error: buyPlanRes.data.message,
@@ -5353,9 +5376,9 @@ const approvePendingSubscriptionRequests = async (req, res) => {
         } catch (err) {
           console.log("err..", err);
 
-          return res.status(500).json({
+          return res.status(200).json({
             success: false,
-            message: 'Internal call to buy-membership-plan failed',
+            message: 'Internal server Error, Please try after sometime!',
             error: err.message,
           });
         }
