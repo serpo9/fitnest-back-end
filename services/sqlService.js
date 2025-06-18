@@ -394,6 +394,10 @@ const SubscriptionAssignmentRequests = sequelize.define('subscriptionAssignmentR
 	adminId: {
 		type: Sequelize.INTEGER,
 		allowNull: false,
+	},
+	daysQty: {
+		type: Sequelize.INTEGER,
+		allowNull: false,
 	}
 });
 
