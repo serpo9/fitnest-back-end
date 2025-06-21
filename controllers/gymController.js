@@ -5134,33 +5134,49 @@ const getActiveAdmins = async (req, res, next) => {
 const uploadFile = async (req, res) => {
   try {
     if (!req.file) {
-      return res.status(400).json({ error: true, message: "Please upload a PDF file!" });
+      return res.status(400).json({success: false, message: "Please upload a PDF file!" });
     }
 
-    res.status(200).json({
-      error: false,
-      message: "PDF uploaded successfully!",
-      filename: req.file.filename,
-      path: req.file.path
+    const { adminId, trainerId } = req.body;
+
+    const createObj = {
+      adminId : adminId, 
+      trainerId : trainerId,
+      pdfname: req.file.filename,
+    };
+
+    // Insert into StorePlans
+    sqlService.insert(sqlService.StorePlans, createObj, (response) => {
+      if (response.error) {
+        return res.status(400).json({
+          success: false,
+          message: "PDF uploaded but failed to insert into StorePlans.",
+        });
+      }
+
+      return res.status(200).json({
+        success: true,
+        message: "PDF uploaded and saved successfully!",
+        data: {
+          filename: req.file.filename,
+          dbRecord: response.data,
+        },
+      });
     });
+
   } catch (err) {
     console.error("Upload Error:", err.message);
     res.status(500).json({ error: true, message: "Internal server error" });
   }
 };
 
+
 const getTrainerPDFs = (req, res) => {
   try {
     const trainerId = req.params.trainerId;
     const pdfDir = path.join(__dirname, '..', 'fitnest', '.pdf');
-
-    // Read all PDF files
     const allFiles = fs.readdirSync(pdfDir);
-
-    // Filter files belonging to the specific trainer
     const trainerPDFs = allFiles.filter(file => file.startsWith(trainerId + '-') && file.endsWith('.pdf'));
-
-    // Create public URLs (adjust based on your static setup)
     const pdfUrls = trainerPDFs.map(file => ({
       name: file,
       url: `/fitnest/.pdf/${file}`, // <-- make sure this path is served statically via Express
@@ -5178,6 +5194,75 @@ const getTrainerPDFs = (req, res) => {
 };
 
 
+const assignPlanToUser = (req, res) => {
+  try {
+    const { trainerId, adminId, username, userid, pdfname } = req.body;
+
+    // Validate required fields
+    if (!trainerId || !adminId || !username || !userid || !pdfname) {
+      return res.status(400).json({
+        success: false,
+        message: "Missing required fields!",
+      });
+    }
+
+    const createObj = {
+      trinaerId: trainerId,
+      adminId: adminId,
+      username: username,
+      userid: userid,
+      pdfname: pdfname,
+    };
+
+    sqlService.insert(sqlService.ClientDietPlan, createObj, (response) => {
+      if (response.error) {
+        return res.status(400).json({
+          success: false,
+          message: "Failed to assign plan to user.",
+        });
+      }
+
+      return res.status(200).json({
+        success: true,
+        message: "Plan assigned to user successfully!",
+        data: response.data,
+      });
+    });
+
+  } catch (err) {
+    console.error("Assign Plan Error:", err.message);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+};
+
+
+const getPlansByAdminOrTrainerId = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const query = `
+      SELECT * FROM clientDietPlans
+      WHERE userid = ${id}  
+      ORDER BY createdAt DESC
+    `;
+    sqlService.query(query, (response) => {
+      console.log
+      if (response.success) {
+        return res.status(200).json({ success: true, data: response.data });
+      } else {
+        return res.status(500).json({
+          success: false,
+          message: 'No data found for the given ID',
+        });
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching store plans:', error.message);
+    return res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+};
 
 // Reception view
 const requestSubscriptionAssignment = async (req, res) => {
@@ -5485,5 +5570,7 @@ module.exports = {
   listPendingSubscriptionRequests,
   approvePendingSubscriptionRequests,
   uploadFile,
-  getTrainerPDFs
+  getTrainerPDFs,
+  getPlansByAdminOrTrainerId,
+  assignPlanToUser
 }

@@ -141,6 +141,8 @@ router.get('/get-subs-approval-list/:adminId', gymController.listPendingSubscrip
 router.post('/approve-subs-approval-list', gymController.approvePendingSubscriptionRequests);
 router.post('/upload-pdf', upload.single('file'), gymController.uploadFile);
 router.get('/get-trainer-pdfs/:trainerId',gymController.getTrainerPDFs);
+router.get('/get-plan-for-users/:id',gymController.getPlansByAdminOrTrainerId);
+router.post('/assign-plan-to-users',gymController.assignPlanToUser);
 
 
 module.exports = router;

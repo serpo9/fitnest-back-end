@@ -349,6 +349,23 @@ const UserDietPlans = sequelize.define('userDietPlans', {
 	status: Sequelize.STRING
 });
 
+
+const StorePlans = sequelize.define('storePlans' , {
+	trainerId: Sequelize.INTEGER,    
+	adminId: Sequelize.INTEGER,   
+	pdfname: Sequelize.STRING,
+})
+
+
+const ClientDietPlan = sequelize.define('clientDietPlan' , {
+	trinaerId: Sequelize.INTEGER,    
+	adminId: Sequelize.INTEGER,   
+	username: Sequelize.STRING,
+	userid: Sequelize.STRING,
+	pdfname: Sequelize.STRING,
+})
+
+
 const SubscriptionAssignmentRequests = sequelize.define('subscriptionAssignmentRequests', {
 	userId: {
 		type: Sequelize.INTEGER,
@@ -758,7 +775,9 @@ let sendExports = {
 	MembershipPurchasesHistories,
 	MembershipPurchasedInstallmentAmounts,
 	UserDietPlans,
-	SubscriptionAssignmentRequests
+	SubscriptionAssignmentRequests,
+	ClientDietPlan,
+	StorePlans
 }
 
 module.exports = sendExports;
