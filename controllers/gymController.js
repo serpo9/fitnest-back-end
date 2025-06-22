@@ -2951,6 +2951,7 @@ const getSubscribedUsers = async (req, res, next) => {
   try {
     const { adminId } = req.params;
     const { fromDate, toDate, searchTerm, filter } = req.query;
+    console.log(adminId , fromDate, toDate, searchTerm, filter , "here got subscribed user from here ")
 
     if (!adminId) {
       return res.status(400).json({
