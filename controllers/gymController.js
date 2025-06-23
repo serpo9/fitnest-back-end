@@ -5492,6 +5492,32 @@ const approvePendingSubscriptionRequests = async (req, res) => {
     });
   }
 };
+const getAssignedUsers = async (req, res) => {
+  try {
+    const { adminId } = req.params;
+    const query = `
+      SELECT * FROM clientDietPlans
+      WHERE adminId = ${adminId}  
+      ORDER BY createdAt DESC
+    `;
+    sqlService.query(query, (response) => {
+      console.log
+      if (response.success) {
+        return res.status(200).json({ success: true, data: response.data });
+      } else {
+        return res.status(500).json({
+          success: false,
+          message: 'No data found',
+        });
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching store plans:', error.message);
+    return res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+};
+
+
 
 
 
@@ -5573,5 +5599,6 @@ module.exports = {
   uploadFile,
   getTrainerPDFs,
   getPlansByAdminOrTrainerId,
-  assignPlanToUser
+  assignPlanToUser,
+  getAssignedUsers
 }
