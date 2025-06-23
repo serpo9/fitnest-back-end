@@ -143,6 +143,7 @@ router.post('/upload-pdf', upload.single('file'), gymController.uploadFile);
 router.get('/get-trainer-pdfs/:trainerId',gymController.getTrainerPDFs);
 router.get('/get-plan-for-users/:id',gymController.getPlansByAdminOrTrainerId);
 router.post('/assign-plan-to-users',gymController.assignPlanToUser);
+router.get('/get-asssigned-users/:adminId',gymController.getAssignedUsers);
 
 
 module.exports = router;
