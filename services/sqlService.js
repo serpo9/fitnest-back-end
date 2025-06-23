@@ -6,6 +6,7 @@ const Sequelize = require('sequelize'),
 		host: process.env['MYSQL_HOST'],
 		port: process.env['MYSQL_PORT'],
 		dialect: 'mysql',
+		timezone: '+05:30',
 		logging: false
 	}),
 	moment = require('moment');
@@ -413,8 +414,7 @@ const SubscriptionAssignmentRequests = sequelize.define('subscriptionAssignmentR
 		allowNull: false,
 	},
 	daysQty: {
-		type: Sequelize.INTEGER,
-		allowNull: false,
+		type: Sequelize.INTEGER
 	}
 });
 

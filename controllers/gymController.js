@@ -4089,221 +4089,14 @@ const registerUserOnDevice = async (device, userData) => {
   }
 };
 
-
-// const fetchAttendanceData = async (req, res) => {
-//   try {
-//     const { adminId, userType, deviceId } = req.body;
-
-//     const { startTime, endTime, userId } = req.query;
-
-//     if (!adminId) {
-//       return res.status(400).json({ success: false, message: "Invalid adminId or userId." });
-//     }
-
-//     if (!userType) {
-//       return res.status(400).json({ success: false, message: "Provide the userType" });
-//     }
-
-//     const now = moment().utcOffset("+05:30").endOf("day");
-//     const start = startTime ? moment(new Date(startTime)).utcOffset("+05:30").startOf("day") : moment().subtract(1, "day").utcOffset("+05:30").startOf("day");
-//     const end = endTime ? moment(new Date(endTime)).utcOffset("+05:30").endOf("day") : moment().subtract(1, "day").utcOffset("+05:30").endOf("day");
-
-//     if (start.isAfter(now) || end.isAfter(now)) {
-//       return res.status(200).json({ success: false, message: "Date range must be today or earlier." });
-//     }
-
-//     const searchID = `search-${Date.now()}`;
-//     const requestData = {
-//       AcsEventCond: {
-//         searchID,
-//         searchResultPosition: 0,
-//         maxResults: 1000,
-//         major: 5,
-//         minor: 75,
-//         startTime: start.format("YYYY-MM-DDTHH:mm:ssZ"),
-//         endTime: end.format("YYYY-MM-DDTHH:mm:ssZ"),
-//         picEnable: false
-//       },
-//     };
-
-//     // Promisify the SQL query:
-//     const deviceResponse = await new Promise((resolve, reject) => {
-//       sqlService.query(`SELECT * FROM devices WHERE id=${deviceId}`, (result) => {
-//         if (!result.success) return reject(new Error("Failed to fetch device IP."));
-//         resolve(result);
-//       });
-//     });
-
-//     console.log('deviceResponse..', deviceResponse);
-
-
-//     const userName = deviceResponse.data[0].username;
-//     const password = deviceResponse.data[0].password;
-
-//     const ipAddress = deviceResponse.data[0].ipAddress;
-
-//     const client = new DigestClient(userName, password);
-//     const url = `http://${ipAddress}/ISAPI/AccessControl/AcsEvent?format=json`;
-
-//     let response;
-//     try {
-//       response = await client.fetch(url, {
-//         method: "POST",
-//         body: JSON.stringify(requestData),
-//         headers: { "Content-Type": "application/json" },
-//       });
-//     } catch (error) {
-//       console.error(`Error connecting to device at ${ipAddress}`);
-//       if (['ETIMEDOUT', 'EHOSTDOWN', 'ENETUNREACH', 'ECONNREFUSED'].includes(error.code)) {
-//         return res.status(200).json({ success: false, message: `Device is unreachable (${error.code}).` });
-//       }
-//       return res.status(500).json({ success: false, message: `Unexpected fetch error: ${error.message}` });
-//     }
-
-//     if (!response.ok) {
-//       return res.status(500).json({ success: false, message: `Device error: ${response.statusText}` });
-//     }
-
-//     const data = await response.json();
-//     const attendanceList = data?.AcsEvent?.InfoList || [];
-//     const attendanceMap = {};
-
-//     for (const info of attendanceList) {
-//       const empId = info.employeeNoString;
-//       const date = new Date(info.time).toISOString().split("T")[0];
-//       const key = `${empId}-${date}`;
-//       if (!attendanceMap[key] || new Date(info.time) < new Date(attendanceMap[key].time)) {
-//         attendanceMap[key] = info;
-//       }
-//     }
-
-//     const startDate = start.format("YYYY-MM-DD HH:mm:ss");
-//     const endDate = end.format("YYYY-MM-DD HH:mm:ss");
-
-//     // Just to get active users who's absent
-//     let membershipsQuery = `
-//       SELECT u.id AS userId, u.name, m.purchaseDate, m.expiryDate
-//       FROM users u
-//       INNER JOIN membershipPurchases m ON u.id = m.userId
-//       WHERE u.userType = '${userType}'
-//       AND u.createdByAdmin = ${adminId}
-//       AND m.status = 'active'
-//       AND m.paymentStatus = 'true'
-//       AND m.expiryDate >= '${startDate} 00:00:00'
-//       AND m.purchaseDate <= '${endDate} 23:59:59'`;
-
-//     if (userId) membershipsQuery += ` AND u.id = ${userId}`;
-
-//     const membershipResponse = await new Promise((resolve, reject) => {
-//       sqlService.query(membershipsQuery, (result) => {
-//         if (!result.success) return reject(new Error("Failed to fetch active members."));
-//         resolve(result);
-//       });
-//     });
-
-//     const members = membershipResponse.data;
-//     const insertPromises = [];
-//     const resultData = [];
-
-//     for (const member of members) {
-//       const empId = member.userId;
-//       const name = member.name;
-//       const validFrom = moment(member.purchaseDate).startOf("day");
-//       const validTo = moment(member.expiryDate).endOf("day");
-
-//       for (let date = moment(start); date.isSameOrBefore(end, "day"); date.add(1, "day")) {
-//         const dateStr = date.format("YYYY-MM-DD");
-//         if (date.isBefore(validFrom) || date.isAfter(validTo)) continue;
-
-//         const key = `${empId}-${dateStr}`;
-//         const existing = attendanceMap[key];
-
-//         const checkQuery = `
-//           SELECT * FROM attendances WHERE userId = '${empId}' AND DATE(time) = '${dateStr}' AND adminId = '${adminId}' LIMIT 1
-//         `;
-
-//         const attendanceResult = await new Promise((resolve, reject) => {
-//           sqlService.query(checkQuery, (result) => {
-//             if (!result.success) return reject(new Error("Failed during attendance check."));
-//             resolve(result);
-//           });
-//         });
-
-//         if (attendanceResult.data.length === 0) {
-//           const isToday = moment(dateStr).isSame(moment(), "day");
-//           if (!existing && isToday) continue;
-
-//           const insertObj = {
-//             userId: empId,
-//             adminId,
-//             name,
-//             time: existing ? new Date(existing.time) : new Date(dateStr),
-//             status: existing ? "Present" : "Absent",
-//             deviceId: deviceId
-//           };
-
-//           insertPromises.push(new Promise((resolve, reject) => {
-//             sqlService.insert(sqlService.Attendances, insertObj, (insertResponse) => {
-//               if (!insertResponse.success) return reject(new Error("Failed to insert attendance record."));
-//               resolve(insertResponse);
-//             });
-//           }));
-
-//           resultData.push(insertObj);
-//         } else {
-//           resultData.push({
-//             userId: empId,
-//             name,
-//             time: attendanceResult.data[0].time,
-//             status: attendanceResult.data[0].status,
-//           });
-//         }
-//       }
-//     }
-
-//     await Promise.all(insertPromises);
-
-//     const presentCountByType = await new Promise((resolve, reject) => {
-//       const presentQuery = `
-//         SELECT u.userType, COUNT(*) AS count
-//         FROM attendances a
-//         INNER JOIN users u ON a.userId = u.id
-//         WHERE a.adminId = '${adminId}'
-//         AND a.status = 'Present'
-//         AND DATE(a.time) BETWEEN '${start.format("YYYY-MM-DD")}' AND '${end.format("YYYY-MM-DD")}'
-//         GROUP BY u.userType
-//       `;
-
-//       sqlService.query(presentQuery, (result) => {
-//         if (!result.success) return reject(new Error("Failed to count present attendances."));
-//         const counts = { Customer: 0, Trainer: 0 };
-//         for (const row of result.data) {
-//           if (row.userType === "Customer") counts.Customer = row.count;
-//           else if (row.userType === "Trainer") counts.Trainer = row.count;
-//         }
-//         resolve(counts);
-//       });
-//     });
-
-//     res.status(200).json({
-//       success: true,
-//       message: "Attendance processed with valid memberships only.",
-//       data: resultData,
-//       presentCount: presentCountByType,
-//     });
-//   } catch (err) {
-//     console.error(`❌ Error: ${err.code || ''} ${err.message}`);
-//     res.status(500).json({ success: false, message: "Internal server error.", error: err.message });
-//   }
-// };
-
 const fetchAttendanceData = async (req, res) => {
 
   try {
     const { adminId, userType, deviceId } = req.body;
-    const { fromDate, toDate, userId } = req.query;
+    const { fromDate, toDate, searchTerm } = req.query;
 
-    if (!adminId) return res.status(400).json({ success: false, message: "Invalid adminId or userId." });
+
+    if (!adminId) return res.status(400).json({ success: false, message: "Invalid adminId." });
     if (!userType) return res.status(400).json({ success: false, message: "Provide the userType" });
 
     const now = moment().utcOffset("+05:30").endOf("day");
@@ -4403,9 +4196,8 @@ const fetchAttendanceData = async (req, res) => {
     }
 
     const attendanceMap = {};
-    const employeeNoArray = [];
+
     for (const info of totalAttendanceList) {
-      // console.log(cnt1++ , " : ", info.employeeNoString);
 
       const empId = info.employeeNoString;
       const date = info.time.split("T")[0];
@@ -4420,18 +4212,9 @@ const fetchAttendanceData = async (req, res) => {
       }
     }
 
-    // const filePath = path.join(__dirname, '../data/employeeNoJson.json');
+    // console.log("attendanceMap..", attendanceMap);
 
-    // fs.writeFile(filePath, JSON.stringify(employeeNoJson, null, 2), (err) => {
-    //   if (err) {
-    //     console.error("❌ Error writing JSON file:", err);
-    //   } else {
-    //     console.log("✅ employeeNoJson saved at:", filePath);
-    //   }
-    // });
-
-    // console.log("employee No : ", employeeNoArray);
-    console.log("attendanceMap length: ", Object.keys(attendanceMap).length);
+    // console.log("attendanceMap length: ", Object.keys(attendanceMap).length);
     // console.log("attendance data : ", attendanceMap)
 
     const startDate = start.format("YYYY-MM-DD HH:mm:ss");
@@ -4451,27 +4234,20 @@ const fetchAttendanceData = async (req, res) => {
         AND m.purchaseDate <= '${endDate}'
       ` : ''}
     `;
-    // console.log("userQuery : ", usersQuery)
-    if (userId) usersQuery += ` AND u.id = ${userId}`;
+    if (searchTerm && searchTerm != "undefined") usersQuery += ` AND u.id = ${searchTerm}`;
 
     const usersResponse = await new Promise((resolve, reject) => {
       sqlService.query(usersQuery, (result) => {
-
-        // console.log("result : ", result);
         if (!result.success) return reject(new Error("Failed to fetch users."));
         resolve(result);
       });
     });
 
     const users = usersResponse.data;
-    console.log("users...", users.length);
-
+    // console.log("users...", users);
 
     const insertPromises = [];
     const resultData = [];
-    let cnt = 0;
-    let cnt1 = 0;
-    let cnt2 = 0;
     for (const user of users) {
       const empId = user.employeeNo;
       const userId = user.userId;
@@ -4486,12 +4262,8 @@ const fetchAttendanceData = async (req, res) => {
         if (date.isBefore(validFrom) || date.isAfter(validTo)) continue;
 
         const key = `${empId}-${dateStr}`;
-        // console.log("key 2 : ", key);
+        // console.log("key 2: ", key);
         const existing = attendanceMap[key];
-        if (existing) {
-          cnt++;
-        }
-        else cnt2++;
 
         // const checkQuery = `
         //   SELECT * FROM attendances
@@ -4504,7 +4276,6 @@ const fetchAttendanceData = async (req, res) => {
         const checkQuery =
           ` SELECT * FROM attendances WHERE userId = '${userId}' AND DATE(time) = '${dateStr}' AND adminId = '${adminId}' LIMIT 1`
           ;
-        // console.log("checkQuery : ", checkQuery);
 
         const attendanceResult = await new Promise((resolve, reject) => {
           sqlService.query(checkQuery, (result) => {
@@ -4513,27 +4284,31 @@ const fetchAttendanceData = async (req, res) => {
           });
         });
 
-        // console.log("attendanceResult...", attendanceResult);
+        // ✅ Format the time column for each row
+        attendanceResult.data = attendanceResult.data.map((row) => {
+          return {
+            ...row,
+            time: moment(row.time).utcOffset('+05:30').format('YYYY-MM-DD HH:mm:ss')
+          };
+        });
 
 
         if (attendanceResult.data.length === 0) {
           // const isToday = moment(dateStr).isSame(moment(), "day");
 
-          // console.log("existing...", existing);
+          if (!existing) continue;
 
-
-          if (!existing && userType === "Customer") continue;
+          const localTime = moment(existing.time).utcOffset('+05:30').format('YYYY-MM-DD HH:mm:ss');
 
           const insertObj = {
             userId: userId,
             adminId,
             name,
-            time: existing ? new Date(existing.time) : new Date(dateStr),
-            status: existing ? "Present" : "Absent",
+            time: localTime,
+            status: "Present",
+            // status: existing ? "Present" : "Absent",
             deviceId: deviceId
           };
-          // console.log("insertObj...", insertObj);
-
 
           insertPromises.push(new Promise((resolve, reject) => {
             sqlService.insert(sqlService.Attendances, insertObj, (insertResponse) => {
@@ -4557,21 +4332,19 @@ const fetchAttendanceData = async (req, res) => {
         }
       }
     }
-    console.log("cnt : ", cnt);
-    console.log("cnt2 : ", cnt2);
 
     await Promise.all(insertPromises);
 
     const presentCountByType = await new Promise((resolve, reject) => {
-      const presentQuery = `
-        SELECT u.userType, COUNT(*) AS count
-        FROM attendances a
-        INNER JOIN users u ON a.userId = u.id
-        WHERE a.adminId = '${adminId}'
-        AND a.status = 'Present'
-        AND DATE(a.time) BETWEEN '${start.format("YYYY-MM-DD")}' AND '${end.format("YYYY-MM-DD")}'
-        GROUP BY u.userType
-      `;
+
+      const presentQuery =
+        `SELECT u.userType, COUNT(*) AS count
+      FROM attendances a
+      INNER JOIN users u ON a.userId = u.id
+      WHERE a.adminId = '${adminId}'
+      AND a.status = 'Present'
+      AND DATE(a.time) BETWEEN '${start.format("YYYY-MM-DD")}' AND '${end.format("YYYY-MM-DD")}'
+      GROUP BY u.userType`;
 
       sqlService.query(presentQuery, (result) => {
         if (!result.success) return reject(new Error("Failed to count present attendances."));
@@ -4875,7 +4648,15 @@ const getIndividualAttendance = async (req, res) => {
       return res.status(500).json({ success: false, message: 'Failed to fetch attendances' });
     }
 
-    return res.json({ success: true, data: response.data });
+    // formatting date since timestamp is being returned as a UTC
+    const formattedData = response.data.map((row) => {
+      return {
+        ...row,
+        time: moment(row.time).utcOffset('+05:30').format('YYYY-MM-DD HH:mm:ss')
+      }
+    })
+
+    return res.json({ success: true, data: formattedData });
   });
 };
 
@@ -5134,14 +4915,14 @@ const getActiveAdmins = async (req, res, next) => {
 const uploadFile = async (req, res) => {
   try {
     if (!req.file) {
-      return res.status(400).json({success: false, message: "Please upload a PDF file!" });
+      return res.status(400).json({ success: false, message: "Please upload a PDF file!" });
     }
 
     const { adminId, trainerId } = req.body;
 
     const createObj = {
-      adminId : adminId, 
-      trainerId : trainerId,
+      adminId: adminId,
+      trainerId: trainerId,
       pdfname: req.file.filename,
     };
 
