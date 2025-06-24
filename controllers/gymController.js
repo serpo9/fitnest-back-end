@@ -1068,7 +1068,7 @@ const getActiveCustomerById = async (req, res, next) => {
       }
 
       if (response.data.length === 0) {
-        return res.status(404).json({
+        return res.status(200).json({
           success: false,
           message: "No active customer found with this ID",
         });
@@ -2951,7 +2951,7 @@ const getSubscribedUsers = async (req, res, next) => {
   try {
     const { adminId } = req.params;
     const { fromDate, toDate, searchTerm, filter } = req.query;
-    console.log(adminId , fromDate, toDate, searchTerm, filter , "here got subscribed user from here ")
+    console.log(adminId, fromDate, toDate, searchTerm, filter, "here got subscribed user from here ")
 
     if (!adminId) {
       return res.status(400).json({
@@ -3507,7 +3507,7 @@ const getMembershipPaymentHistory = async (req, res) => {
   }
 
   if (searchTerm && searchTerm !== "null") {
-    query += ` AND users.phoneNumber = '${searchTerm}'`;
+    query += ` AND users.phoneNumber LIKE '%${searchTerm}%'`;
   }
 
   query += ` GROUP BY users.id, DATE(membershipPurchasesHistories.createdAt)
@@ -3531,7 +3531,7 @@ const getMembershipPaymentHistory = async (req, res) => {
     }));
     let total = 0;
 
-    response.data.forEach(item => total = parseFloat(item.amountPaid) + parseFloat(total))
+    response.data.forEach(item => total = parseFloat(item.amountPaid) + parseFloat(total) + parseFloat(item.admissionFee))
 
     let totalAmount = total;
     return res.json({ success: true, data, totalAmount });
@@ -4676,7 +4676,7 @@ const getTodaysCollection = async (req, res) => {
     WHERE mp.userId = ${adminId}
     AND DATE(mph.purchaseDate) = CURDATE()
   `;
-
+  memberships - histor
   sqlService.query(query, (response) => {
 
     if (!response.success) {
