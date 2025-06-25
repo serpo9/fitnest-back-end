@@ -2656,7 +2656,7 @@ const getDueAmount = async (req, res) => {
   try {
     let planDetailQuery = `SELECT * FROM membershipPlans WHERE membershipPlans.id = ${membershipPlansId}`;
     sqlService.query(planDetailQuery, planDetailRes => {
-      // console.log("planDetailQuery : ", planDetailRes.data);
+      console.log("planDetailQuery : ", planDetailRes.data);
       if (!planDetailRes.success) {
         return res.status(500).json({ success: false, message: "database error" });
       }
@@ -4676,7 +4676,7 @@ const getTodaysCollection = async (req, res) => {
     WHERE mp.userId = ${adminId}
     AND DATE(mph.purchaseDate) = CURDATE()
   `;
-  memberships - histor
+
   sqlService.query(query, (response) => {
 
     if (!response.success) {
