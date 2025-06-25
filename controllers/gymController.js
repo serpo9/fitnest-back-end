@@ -450,9 +450,8 @@ const registerUserByAdmin = async (req, res, next) => {
       };
 
       sqlService.insert(sqlService.Users, createObj, async function (response) {
-        console.log("insert res ; ", response)
         if (!response.success) {
-          return res.status(400).json({
+          return res.status(200).json({
             success: false,
             message: "User already registered or an error occurred.",
           });
@@ -2580,7 +2579,7 @@ const updateReceivedAmount = async (req, res) => {
       };
 
       const formattedDate = formatToLocalDateTime(purchaseDate);
-      const purchasedPlanQuery = `Select * from membershipPurchases where userId = ${userId} AND purchaseDate = '${formattedDate}'`;
+      const purchasedPlanQuery = `Select * from membershipPurchases where userId = ${userId} AND DATE(purchaseDate) = DATE('${formattedDate}')`;
       sqlService.query(purchasedPlanQuery, purchasedPlanRes => {
         // console.log("planDetailQuery res :  ", purchasedPlanRes);
         if (!purchasedPlanRes.success || purchasedPlanRes.data.length == 0) {
@@ -2656,7 +2655,7 @@ const getDueAmount = async (req, res) => {
   try {
     let planDetailQuery = `SELECT * FROM membershipPlans WHERE membershipPlans.id = ${membershipPlansId}`;
     sqlService.query(planDetailQuery, planDetailRes => {
-      console.log("planDetailQuery : ", planDetailRes.data);
+      // console.log("planDetailQuery : ", planDetailRes.data);
       if (!planDetailRes.success) {
         return res.status(500).json({ success: false, message: "database error" });
       }
@@ -2672,11 +2671,13 @@ const getDueAmount = async (req, res) => {
       };
 
       const formattedDate = formatToLocalDateTime(purchaseDate);
+      console.log("formattedDate...", formattedDate);
+      
 
-      const purchasedPlanQuery = `SELECT * FROM membershipPurchases WHERE userId = ${userId} AND purchaseDate = '${formattedDate}'`;
+      const purchasedPlanQuery = `SELECT * FROM membershipPurchases WHERE userId = ${userId} AND DATE(purchaseDate) = DATE('${formattedDate}')`;
       // console.log("query : ", purchasedPlanQuery)
       sqlService.query(purchasedPlanQuery, purchasedPlanRes => {
-        // console.log("purchased plan res :  ", purchasedPlanRes);
+        console.log("purchased plan res :  ", purchasedPlanRes);
         if (!purchasedPlanRes.success || purchasedPlanRes.data.length == 0) {
           return res.json({ success: false, message: "no data found or something went wrong" });
         }

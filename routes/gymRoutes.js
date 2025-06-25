@@ -46,6 +46,7 @@ router.get('/get-tracking-progress/:userId', gymController.fetchTrackUsers);
 router.get('/users-count/:adminId', gymController.getUserCounts);
 router.get('/staffs-count/:adminId', gymController.getStaffCount);
 router.get('/search-users/:adminId', userController.searchUsers);
+router.post('/update-profile', userController.updateUserPersonalData);
 router.get('/search-usersByType/:adminId', userController.searchUsersByUserType);
 router.get('/search-trainerByStatus/:adminId', userController.searchTrainerByStatus);
 router.post('/approve-trainer', userController.approveOrDeactivateTrainer);
