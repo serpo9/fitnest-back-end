@@ -855,6 +855,7 @@ const scheduleController = {
       const query = `
       SELECT 
         sr.id AS requestId,
+        sr.createdAt,
         u.id AS userId,
         u.name AS username,
         u.email,

@@ -2422,7 +2422,7 @@ const buyMembershipPlan = async (req, res) => {
           monthQty: planType === "subs-plan" ? monthQty : null,
           dayQty: planType === "visitor-plan" ? daysQty : null,
           status: 'active',
-          admissionFeez: admissionFee == "undefined" ? 0 : admissionFee
+          admissionFee: admissionFee == "undefined" ? 0 : admissionFee
         };
 
         const checkExistUserQuery = `SELECT * FROM membershipPurchases WHERE userId=${userId}`;
