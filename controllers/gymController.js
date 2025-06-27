@@ -387,22 +387,42 @@ const verifyRegisteringUser = async (req, res, next) => {
           });
         }
 
-        const user = response.data;
-
         // Generate JWT token
-        const token = jwt.sign(
-          { id: user.id, email: user.email },
-          process.env.JWT_SECRET,
-          {
-            expiresIn: "30d",
+        // const token = jwt.sign(
+        //   { id: user.id, email: user.email },
+        //   process.env.JWT_SECRET,
+        //   {
+        //     expiresIn: "30d",
+        //   }
+        // );
+
+        const user = response.data.dataValues;
+
+        sqlService.update(
+          sqlService.Users,
+          { employeeNo: user.id },
+          { id: user.id },
+          function (updateRes) {
+            if (!updateRes.success) {
+              return res.status(500).json({
+                success: false,
+                message: "User created but failed to update employeeNo.",
+              });
+            }
+
+            const token = jwt.sign(
+              { id: user.id, email: user.email },
+              process.env.JWT_SECRET,
+              { expiresIn: "30d" }
+            );
+
+            return res.status(201).json({
+              success: true,
+              message: "User registered successfully by Admin.",
+              token: token + "Fitnest" + user.id,
+            });
           }
         );
-
-        return res.status(201).json({
-          success: true,
-          message: "Email address verified! User registered successfully.",
-          token: token + "Fitnest" + user.id,
-        });
       });
     });
   } catch (error) {

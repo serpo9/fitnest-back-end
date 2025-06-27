@@ -684,7 +684,7 @@ WHERE DATEDIFF(m.expiryDate, NOW()) BETWEEN 1 AND 4
 				adminId,
 				expiryDate
 			} = req.body;
-
+	
 			// Validate required fields
 			if (!name || !email || !phoneNo || !userType || !adminId) {
 				return res.status(400).json({
@@ -692,7 +692,7 @@ WHERE DATEDIFF(m.expiryDate, NOW()) BETWEEN 1 AND 4
 					message: "Name, email, phone number, userType, and adminId are required.",
 				});
 			}
-
+	
 			// Check valid staff userType
 			const validUserTypes = ['Admin', 'Trainer', 'Receptionist', 'Cleaner', 'Weight-Picker'];
 			if (!validUserTypes.includes(userType)) {
@@ -701,58 +701,62 @@ WHERE DATEDIFF(m.expiryDate, NOW()) BETWEEN 1 AND 4
 					message: "Invalid userType for staff registration.",
 				});
 			}
-
-			// Check for existing user
-			const checkUserQuery = `SELECT * FROM users WHERE email = '${email}' OR phoneNumber = '${phoneNo}'`;
-			sqlService.query(checkUserQuery, async (checkResult) => {
-				console.log("checkResult...", checkResult);
-
-				if (checkResult.data.length > 0) {
-					return res.status(200).json({
+	
+			// Step 1: Check if any devices exist for the admin
+			const fetchDevicesQuery = `SELECT * FROM devices WHERE userId=${adminId}`;
+			sqlService.query(fetchDevicesQuery, async (deviceRes) => {
+				if (!deviceRes.success) {
+					return res.status(500).json({
 						success: false,
-						message: "User with this email or phone number already exists.",
+						message: "Failed to fetch devices.",
 					});
 				}
-				const hashedPassword = await bcrypt.hash(password, 10);
-
-				// Use your insert function
-				const userData = {
-					name,
-					email,
-					phoneNumber: phoneNo,
-					password: hashedPassword,
-					userType,
-					createdByAdmin: adminId,
-					status: 'active',
-				};
-
-				sqlService.insert(sqlService.Users, userData, (insertResponse) => {
-
-					console.log("insertResponse...", insertResponse.data.dataValues);
-
-					if (!insertResponse.success) {
-						return res.status(500).json({
+	
+				const devices = deviceRes.data;
+	
+				if (devices.length === 0) {
+					return res.status(200).json({
+						success: false,
+						message: "There is no device installed!",
+					});
+				}
+	
+				// Step 2: Check for existing user
+				const checkUserQuery = `SELECT * FROM users WHERE email = '${email}' OR phoneNumber = '${phoneNo}'`;
+				sqlService.query(checkUserQuery, async (checkResult) => {
+					if (checkResult.data.length > 0) {
+						return res.status(200).json({
 							success: false,
-							message: "Failed to register staff member.",
-							error: insertResponse.error,
+							message: "User with this email or phone number already exists.",
 						});
 					}
-					const user = insertResponse.data.dataValues;
-
-					const fetchDevicesQuery = `SELECT * FROM devices WHERE userId=${adminId}`;
-
-					sqlService.query(fetchDevicesQuery, async (deviceRes) => {
-						if (!deviceRes.success) {
+	
+					const hashedPassword = await bcrypt.hash(password, 10);
+	
+					const userData = {
+						name,
+						email,
+						phoneNumber: phoneNo,
+						password: hashedPassword,
+						userType,
+						createdByAdmin: adminId,
+						status: 'active',
+					};
+	
+					// Step 3: Insert the user into the database
+					sqlService.insert(sqlService.Users, userData, async (insertResponse) => {
+						if (!insertResponse.success) {
 							return res.status(500).json({
 								success: false,
-								message: "Found no Device!",
+								message: "Failed to register staff member.",
+								error: insertResponse.error,
 							});
 						}
-
-						const devices = deviceRes.data;
+	
+						const user = insertResponse.data.dataValues;
+	
 						const expireDate = new Date(expiryDate).toISOString();
-
-						const userData = {
+						const deviceUserData = {
 							userId: String(user.id),
 							phoneNo: String(phoneNo),
 							name: String(name),
@@ -761,47 +765,49 @@ WHERE DATEDIFF(m.expiryDate, NOW()) BETWEEN 1 AND 4
 								endTime: expireDate,
 							},
 						};
-
-						// Register user on devices
-						const registerPromises = devices.map((device) => {
-							return gymController.registerUserOnDevices([device], userData);
-						});
-
+	
+						// Step 4: Register user on devices
+						const registerPromises = devices.map((device) =>
+							gymController.registerUserOnDevices([device], deviceUserData)
+						);
+	
 						const registrationResults = (await Promise.all(registerPromises)).flat();
-
 						const allSuccess = registrationResults.every((r) => r.success);
+	
 						if (!allSuccess) {
 							return res.send({
 								success: false,
-								message: "Device failed to register!"
+								message: "Device failed to register!",
 							});
 						}
-
+	
+						// Step 5: Update employeeNo
 						sqlService.update(
 							sqlService.Users,
 							{ employeeNo: user.id },
 							{ id: user.id },
-							function (updateRes) {
+							(updateRes) => {
 								if (!updateRes.success) {
 									return res.status(500).json({
 										success: false,
 										message: "User created but failed to update employeeNo.",
 									});
 								}
-
+	
 								return res.status(201).json({
 									success: true,
-									message: "Staff member registered successfully on device!.",
+									message: "Staff member registered successfully on device.",
 								});
 							}
 						);
-					})
+					});
 				});
 			});
 		} catch (error) {
 			next(error);
 		}
 	},
+	
 
 	assignSalary: async (req, res, next) => {
 		try {
