@@ -379,8 +379,8 @@ const verifyRegisteringUser = async (req, res, next) => {
       }
 
       // Insert user using sqlService
-      sqlService.insert(sqlService.Users, createObj, function (response) {
-        if (response.error) {
+      sqlService.insert(sqlService.Users, createObj, async function (response) {
+        if (!response.success) {
           return res.status(400).json({
             success: false,
             message: "User already registered or an error occurred.",
@@ -396,7 +396,7 @@ const verifyRegisteringUser = async (req, res, next) => {
         //   }
         // );
 
-        const user = response.data.dataValues;
+        const user = await response.data.dataValues;
 
         sqlService.update(
           sqlService.Users,
