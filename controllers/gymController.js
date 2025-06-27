@@ -5294,30 +5294,110 @@ const approvePendingSubscriptionRequests = async (req, res) => {
     });
   }
 };
+// const getAssignedUsers = async (req, res) => {
+//   try {
+//     const { adminId } = req.params;
+//     const query = `
+//       SELECT * FROM clientDietPlans
+//       WHERE adminId = ${adminId}  
+//       ORDER BY createdAt DESC
+//     `;
+
+//     if (
+//       fromDate &&
+//       toDate &&
+//       fromDate !== "null" &&
+//       toDate !== "null" &&
+//       fromDate !== undefined &&
+//       toDate !== undefined
+//     ) {
+//       const from = `${fromDate} 00:00:00`;
+//       const to = `${toDate} 23:59:59`;
+//       query += ` AND cdp.createdAt BETWEEN '${from}' AND '${to}'`;
+//     }
+
+//     if (searchTerm && searchTerm !== "null") {
+//       query += ` AND (u.phoneNumber LIKE '%${searchTerm}%' OR u.name LIKE '%${searchTerm}%')`;
+//     }
+
+//     if (filter === 'expired') {
+//       query += ` AND cdp.validTill < NOW()`;
+//     } else if (filter === 'active') {
+//       query += ` AND cdp.validTill >= NOW()`;
+//     }
+
+//     query += ` ORDER BY cdp.createdAt DESC`;
+
+//     sqlService.query(query, (response) => {
+//       if (response.success) {
+//         return res.status(200).json({ success: true, data: response.data });
+//       } else {
+//         return res.status(500).json({ success: false, message: 'No data found' });
+//       }
+//     });
+//   } catch (error) {
+//     console.error('Error fetching assigned users:', error.message);
+//     return res.status(500).json({ success: false, message: 'Internal server error' });
+//   }
+// };
 const getAssignedUsers = async (req, res) => {
   try {
     const { adminId } = req.params;
-    const query = `
+    const { fromDate, toDate, searchTerm, filter } = req.query;
+    console.log(req.query , "here i got something")
+
+    if (!adminId) {
+      return res.status(400).json({ success: false, message: 'AdminId is missing.' });
+    }
+
+    // Start building the base query
+    let query = `
       SELECT * FROM clientDietPlans
-      WHERE adminId = ${adminId}  
-      ORDER BY createdAt DESC
+      WHERE adminId = ${adminId}
     `;
+
+    // Date range filter
+if (
+  fromDate &&
+  toDate &&
+  fromDate.trim().toLowerCase() !== 'undefined' &&
+  toDate.trim().toLowerCase() !== 'undefined' &&
+  fromDate.trim() !== '' &&
+  toDate.trim() !== ''
+)
+
+{
+      const from = `${fromDate} 00:00:00`;
+      const to = `${toDate} 23:59:59`;
+      query += ` AND createdAt BETWEEN '${from}' AND '${to}'`;
+    }
+
+    // Search filter (search on custom field, maybe diet title or notes)
+    if (searchTerm && searchTerm !== 'null') {
+      query += ` AND username LIKE '%${searchTerm}%'`;
+    }
+
+   
+
+    // Final ordering
+    query += ` ORDER BY createdAt DESC`;
+    console.log(query ,"here o got query ")
+
+    // Execute query
     sqlService.query(query, (response) => {
-      console.log
+      console.log(response , "here we got response")
       if (response.success) {
         return res.status(200).json({ success: true, data: response.data });
       } else {
-        return res.status(500).json({
-          success: false,
-          message: 'No data found',
-        });
+        return res.status(200).json({ success: false, message: 'No data found' });
       }
     });
   } catch (error) {
-    console.error('Error fetching store plans:', error.message);
+    console.error('Error fetching assigned users:', error.message);
     return res.status(500).json({ success: false, message: 'Internal server error' });
   }
 };
+
 
 
 
