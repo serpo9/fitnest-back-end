@@ -5344,6 +5344,7 @@ const getAssignedUsers = async (req, res) => {
   try {
     const { adminId } = req.params;
     const { fromDate, toDate, searchTerm, filter } = req.query;
+    
     console.log(req.query , "here i got something")
 
     if (!adminId) {
@@ -5383,14 +5384,49 @@ if (
     query += ` ORDER BY createdAt DESC`;
     console.log(query ,"here o got query ")
 
+    // Pagination
+    const { page = 1, limit = 4 } = req.query;
+    const offset = (page - 1) * limit;
+
+    query += ` LIMIT ${limit} OFFSET ${offset}`;
+       // Build count query
+    let countQuery = `
+      SELECT COUNT(*) AS total FROM clientDietPlans
+      WHERE adminId = ${adminId}
+    `;
+
     // Execute query
-    sqlService.query(query, (response) => {
-      console.log(response , "here we got response")
-      if (response.success) {
-        return res.status(200).json({ success: true, data: response.data });
-      } else {
-        return res.status(200).json({ success: false, message: 'No data found' });
+ sqlService.query(query, (response) => {
+      if (!response.success) {
+        return res.status(500).json({
+          success: false,
+          message: 'Database error occurred.',
+          error: response.error,
+        });
       }
+
+      sqlService.query(countQuery, (countResponse) => {
+        if (!countResponse.success) {
+          return res.status(500).json({
+            success: false,
+            message: 'Count fetch failed.',
+            error: countResponse.error,
+          });
+        }
+
+        const total = countResponse.data[0].total;
+
+        return res.status(200).json({
+          success: true,
+          message: 'Assigned users retrieved successfully.',
+          data: response.data,
+          totalData: total,
+          page: parseInt(page),
+          limit: parseInt(limit),
+          totalPages: Math.ceil(total / limit),
+        });
+      });
+  
     });
   } catch (error) {
     console.error('Error fetching assigned users:', error.message);
