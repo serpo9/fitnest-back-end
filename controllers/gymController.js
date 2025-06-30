@@ -2002,7 +2002,6 @@ const getDashboardCounts = async (req, res) => {
   try {
     const { adminId } = req.params;
 
-
     if (!adminId) {
       return res.status(400).json({ success: false, message: "adminId is required" });
     }
@@ -2017,14 +2016,15 @@ const getDashboardCounts = async (req, res) => {
     `;
 
     const subscriptionQuery = `
-      SELECT 
-        COUNT(DISTINCT mpPurchases.userId) AS totalUniqueBuyers
-      FROM membershipPurchases mpPurchases
-      INNER JOIN membershipPlans mpPlans
-        ON mpPurchases.membershipPlansId = mpPlans.id
-      WHERE mpPlans.userId = ${adminId}
-      AND mpPurchases.status = 'active';
-    `;
+    SELECT 
+      COUNT(DISTINCT mpPurchases.userId) AS totalUniqueBuyers
+    FROM membershipPurchases mpPurchases
+    INNER JOIN membershipPlans mpPlans
+      ON mpPurchases.membershipPlansId = mpPlans.id
+    WHERE mpPlans.userId = ${adminId}
+      AND mpPurchases.status = 'active'
+      AND mpPurchases.expiryDate > NOW();
+  `;
 
     sqlService.query(userCountsQuery, (userResponse) => {
 
@@ -2041,6 +2041,15 @@ const getDashboardCounts = async (req, res) => {
         }
 
         const totalUniqueBuyers = subResponse.data.length > 0 ? subResponse.data[0].totalUniqueBuyers : 0;
+
+
+        const markExpiredQuery = `
+          UPDATE membershipPurchases
+          SET status = 'inactive'
+          WHERE status = 'active' AND expiryDate < NOW();
+        `;
+
+        sqlService.query(markExpiredQuery, (updateRes) => { })
 
         return res.status(200).json({
           success: true,
@@ -3719,7 +3728,6 @@ const getExpiringPlansOfUsers = async (req, res) => {
 
     let whereClause = `
       mpPlans.userId = ${adminId}
-      AND mpPurchases.status = 'active'
     `;
 
     if (fromDate && toDate) {
