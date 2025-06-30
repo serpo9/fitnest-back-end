@@ -431,7 +431,6 @@ const verifyRegisteringUser = async (req, res, next) => {
 };
 
 const registerUserByAdmin = async (req, res, next) => {
-  // console.log("req.body : ", req.body);
   try {
     const {
       userType,
@@ -539,7 +538,6 @@ const registerUserByAdmin = async (req, res, next) => {
 };
 
 const dummyregisterUserByAdmin = async (req, res, next) => {
-  // console.log("req.body : ", req.body);
   try {
     const {
       userType,
@@ -580,7 +578,6 @@ const dummyregisterUserByAdmin = async (req, res, next) => {
       };
 
       sqlService.insert(sqlService.Users, createObj, async function (response) {
-        console.log("insert res ; ", response)
         if (!response.success) {
           return res.status(400).json({
             success: false,
@@ -614,7 +611,6 @@ const dummyregisterUserByAdmin = async (req, res, next) => {
 
     sqlService.query(selectQuery, async (emailCheckResult) => {
       let newEmail = "user1@gmail.com";
-      console.log("email res ; ", emailCheckResult)
       if (emailCheckResult.success && emailCheckResult.data && emailCheckResult.data.length > 0) {
         const lastEmail = emailCheckResult.data[0].email;
         const match = lastEmail.match(/user(\d+)@gmail\.com/);
@@ -2425,7 +2421,6 @@ const buyMembershipPlan = async (req, res) => {
         const registrationResults = (await Promise.all(registerPromises)).flat();
 
         const allSuccess = registrationResults.every((r) => r.success);
-        console.log("allSuccess...", allSuccess);
 
         if (!allSuccess) {
           const failedDevices = registrationResults
@@ -2472,7 +2467,6 @@ const buyMembershipPlan = async (req, res) => {
           };
 
           const saveResult = await saveOrUpdate();
-          console.log("saveResult..", saveResult);
 
           if (!saveResult.success) {
             return res.status(500).json({ success: false, message: "Error saving membership purchase" });
@@ -2536,7 +2530,6 @@ const buyMembershipPlan = async (req, res) => {
           try {
             sqlService.update(sqlService.SubscriptionRequest, { status: 'approved' }, { userId, adminId }, (response) => { })
             await sendInvoice(invoicePayload);
-            console.log("Invoice sent!");
           } catch (invoiceErr) {
             console.error("Failed to send invoice:", invoiceErr.message);
           }
@@ -2574,13 +2567,11 @@ const insertReceivedAmount = async (insertData) => {
       paymentStatus: insertData.status
     }
     sqlService.insert(sqlService.MembershipPurchasedInstallmentAmounts, postObj, resolve)
-    console.log("resolve : ", resolve);
   })
 };
 
 const updateReceivedAmount = async (req, res) => {
   const { purchaseHistoryId, membershipPlansId, userId, payAmount, purchaseDate } = req.body;
-  console.log("body : ", req.body)
   if (!purchaseHistoryId || !membershipPlansId || !userId || !payAmount || !purchaseDate) {
     return res.status(400).json({ success: false, message: "all fields are required" })
   }
@@ -2592,7 +2583,6 @@ const updateReceivedAmount = async (req, res) => {
 
     let planDetailQuery = `SELECT * FROM membershipPlans where id=${membershipPlansId}`;
     sqlService.query(planDetailQuery, planDetailRes => {
-      // console.log("planDetailQuery : ", planDetailRes.data);
       if (!planDetailRes.success) {
         return res.status(500).json({ success: false, message: "database error" });
       }
@@ -2603,14 +2593,12 @@ const updateReceivedAmount = async (req, res) => {
         const datePart = parts[0];
         const timePart = parts[1].split('.')[0];
         const final = `${datePart} ${timePart}`;
-        console.log(final);
         return final;
       };
 
       const formattedDate = formatToLocalDateTime(purchaseDate);
       const purchasedPlanQuery = `Select * from membershipPurchases where userId = ${userId} AND DATE(purchaseDate) = DATE('${formattedDate}')`;
       sqlService.query(purchasedPlanQuery, purchasedPlanRes => {
-        // console.log("planDetailQuery res :  ", purchasedPlanRes);
         if (!purchasedPlanRes.success || purchasedPlanRes.data.length == 0) {
           return res.json({ success: false, message: "no data found or something went wrong" });
         }
@@ -2629,7 +2617,6 @@ const updateReceivedAmount = async (req, res) => {
         }
 
         amountPaid = purchasedPlanData.amountPaid;
-        // console.log("amount paid ; ", amountPaid)
         amountDue = parseFloat(planPrice) - parseFloat(amountPaid);
 
         if (amountDue == 0) {
@@ -2642,9 +2629,7 @@ const updateReceivedAmount = async (req, res) => {
         const updateObj = {
           amountPaid: newPaidAmount
         }
-        console.log("new paid amoint ; ", newPaidAmount);
         sqlService.update(sqlService.MembershipPurchases, updateObj, { id: purchasedPlanData.id }, async updateRes => {
-          // console.log("update response : ", updateRes);
           if (!updateRes.success) {
             return res.status(500).json({ success: false, message: "database error during amount update" });
           }
@@ -2684,7 +2669,6 @@ const getDueAmount = async (req, res) => {
   try {
     let planDetailQuery = `SELECT * FROM membershipPlans WHERE membershipPlans.id = ${membershipPlansId}`;
     sqlService.query(planDetailQuery, planDetailRes => {
-      // console.log("planDetailQuery : ", planDetailRes.data);
       if (!planDetailRes.success) {
         return res.status(500).json({ success: false, message: "database error" });
       }
@@ -2695,18 +2679,15 @@ const getDueAmount = async (req, res) => {
         const datePart = parts[0];
         const timePart = parts[1].split('.')[0];
         const final = `${datePart} ${timePart}`;
-        console.log(final);
         return final;
       };
 
       const formattedDate = formatToLocalDateTime(purchaseDate);
-      console.log("formattedDate...", formattedDate);
 
 
       const purchasedPlanQuery = `SELECT * FROM membershipPurchases WHERE userId = ${userId} AND DATE(purchaseDate) = DATE('${formattedDate}')`;
-      // console.log("query : ", purchasedPlanQuery)
+  
       sqlService.query(purchasedPlanQuery, purchasedPlanRes => {
-        console.log("purchased plan res :  ", purchasedPlanRes);
         if (!purchasedPlanRes.success || purchasedPlanRes.data.length == 0) {
           return res.json({ success: false, message: "no data found or something went wrong" });
         }
@@ -2981,7 +2962,6 @@ const getSubscribedUsers = async (req, res, next) => {
   try {
     const { adminId } = req.params;
     const { fromDate, toDate, searchTerm, filter } = req.query;
-    console.log(adminId, fromDate, toDate, searchTerm, filter, "here got subscribed user from here ")
 
     if (!adminId) {
       return res.status(400).json({
@@ -3095,7 +3075,6 @@ const getSubscribedUsers = async (req, res, next) => {
 //       query += ` AND mp.createdAt BETWEEN '${fromDate}' AND '${toDate}'`;
 //     }
 
-//     console.log("query:", query);
 
 //     sqlService.query(query, (response) => {
 //       if (!response.success) {
@@ -3929,7 +3908,6 @@ const registerUserOnDevice = async (device, userData) => {
 
   try {
     const deviceIp = device.ipAddress;
-    console.log("deviceIp...", deviceIp);
 
     const registerUrl = `http://${deviceIp}/ISAPI/AccessControl/Userinfo/Record?format=json`;
     const modifyUrl = `http://${deviceIp}/ISAPI/AccessControl/UserInfo/Modify?format=json`;
@@ -3982,15 +3960,11 @@ const registerUserOnDevice = async (device, userData) => {
     });
 
     let result = await response.json();
-    console.log("result : ", result);
     if (result.statusCode === 1) {
-      console.log(`✅ User registered successfully on device ${device.purpose}`);
       return { success: true, deviceName: device.purpose };
     }
-    console.log("result.subStatusCode : ", result.subStatusCode)
     // If user already exists, attempt modification
     if (result.subStatusCode === 'employeeNoAlreadyExist') {
-      console.log(`🔁 User exists. Attempting to modify user ${userData.userId} on device ${device.deviceName}...`);
 
       let modifyResponse = await client.fetch(modifyUrl, {
         method: "PUT",
@@ -4001,7 +3975,6 @@ const registerUserOnDevice = async (device, userData) => {
       let modifyResult = await modifyResponse.json();
 
       if (modifyResult.statusCode === 1) {
-        console.log(`✅ User modified successfully on device ${device.deviceName}`);
         return { success: true, deviceName: device.deviceName, modified: true };
       } else {
         console.error(`❌ Failed to modify user on device ${device.deviceName}:`, modifyResult.errorMsg);
@@ -4042,8 +4015,6 @@ const fetchAttendanceData = async (req, res) => {
         .endOf("day")
       : moment().utcOffset("+05:30").endOf("day");
 
-    console.log("start...", start);
-    console.log("end...", end);
 
 
     if (start.isAfter(now) || end.isAfter(now)) {
@@ -4113,15 +4084,12 @@ const fetchAttendanceData = async (req, res) => {
       const data = await response.json();
       const attendanceList = data?.AcsEvent?.InfoList || [];
       totalAttendanceList = totalAttendanceList.concat(attendanceList);
-      // console.log("attendance : ", totalAttendanceList)
       const totalMatches = data?.AcsEvent?.totalMatches || 0;
       const responseStatusStrg = data?.AcsEvent?.responseStatusStrg || "";
       currentPosition += attendanceList.length;
 
-      console.log(`Fetched ${currentPosition} / ${totalMatches} entries`);
 
       hasMore = responseStatusStrg === "MORE" && currentPosition < totalMatches;
-      console.log(" totalAttendanceList length : ", totalAttendanceList.length)
     }
 
     const attendanceMap = {};
@@ -4130,21 +4098,15 @@ const fetchAttendanceData = async (req, res) => {
 
       const empId = info.employeeNoString;
       const date = info.time.split("T")[0];
-      // console.log("info time :", info.time);
 
       const key = `${empId}-${date}`;
       if (!attendanceMap[key] || new Date(info.time) < new Date(attendanceMap[key].time)) {
-        // console.log("key : ", key);
         attendanceMap[key] = info;
 
         employeeNoJson[empId] = empId;
       }
     }
 
-    // console.log("attendanceMap..", attendanceMap);
-
-    // console.log("attendanceMap length: ", Object.keys(attendanceMap).length);
-    // console.log("attendance data : ", attendanceMap)
 
     const startDate = start.format("YYYY-MM-DD HH:mm:ss");
     const endDate = end.format("YYYY-MM-DD HH:mm:ss");
@@ -4173,7 +4135,6 @@ const fetchAttendanceData = async (req, res) => {
     });
 
     const users = usersResponse.data;
-    // console.log("users...", users);
 
     const insertPromises = [];
     const resultData = [];
@@ -4186,21 +4147,11 @@ const fetchAttendanceData = async (req, res) => {
       const validTo = userType === 'Customer' ? moment(user.expiryDate).endOf("day") : end.clone();
 
       for (let date = moment(start); date.isSameOrBefore(end, "day"); date.add(1, "day")) {
-        // console.log("date in for loop : ", date);
         const dateStr = date.format("YYYY-MM-DD");
         if (date.isBefore(validFrom) || date.isAfter(validTo)) continue;
 
         const key = `${empId}-${dateStr}`;
-        // console.log("key 2: ", key);
         const existing = attendanceMap[key];
-
-        // const checkQuery = `
-        //   SELECT * FROM attendances
-        //   WHERE userId = '${userId}'
-        //   AND time BETWEEN '${dateStr} 00:00:00' AND '${dateStr} 23:59:59'
-        //   AND adminId = '${adminId}'
-        //   LIMIT 1
-        //   `;
 
         const checkQuery =
           ` SELECT * FROM attendances WHERE userId = '${userId}' AND DATE(time) = '${dateStr}' AND adminId = '${adminId}' LIMIT 1`
@@ -4241,7 +4192,6 @@ const fetchAttendanceData = async (req, res) => {
 
           insertPromises.push(new Promise((resolve, reject) => {
             sqlService.insert(sqlService.Attendances, insertObj, (insertResponse) => {
-              // console.log("insertResponse", insertResponse);
 
               if (!insertResponse.success) return reject(new Error("Failed to insert attendance record."));
               resolve(insertResponse);
@@ -4398,7 +4348,6 @@ const manageHolidaySummary = async (req, res) => {
             }
 
             if (privateOffDays && privateOffDays > 0) {
-              console.log("in the pvt");
 
               const logRes = await utilityService.logLeaveDates(
                 adminId,
@@ -4653,8 +4602,6 @@ const createDietPlan = async (req, res) => {
     };
 
     sqlService.insert(sqlService.UserDietPlans, createObj, (insertRes) => {
-
-      console.log("insertRes..", insertRes);
 
       if (!insertRes.success) {
         return res.status(500).json({
@@ -4958,7 +4905,6 @@ const getPlansByAdminOrTrainerId = async (req, res) => {
       ORDER BY createdAt DESC
     `;
     sqlService.query(query, (response) => {
-      console.log
       if (response.success) {
         return res.status(200).json({ success: true, data: response.data });
       } else {
@@ -4991,9 +4937,6 @@ const requestSubscriptionAssignment = async (req, res) => {
       name,
       admissionFee,
     } = req.body;
-
-    console.log("req.body.", req.body);
-
 
     if (planType === "subs-plan") {
       if (!userId || !requestedBy || !adminId || !membershipPlansId || !amountPaid || !monthQty || !selectedDuration || !name || !email || !planType || !phoneNo) {
@@ -5177,7 +5120,6 @@ const approvePendingSubscriptionRequests = async (req, res) => {
             });
           }
         } catch (err) {
-          console.log("err..", err);
 
           return res.status(200).json({
             success: false,
@@ -5252,8 +5194,6 @@ const getAssignedUsers = async (req, res) => {
     const { adminId } = req.params;
     const { fromDate, toDate, searchTerm, filter } = req.query;
 
-    console.log(req.query, "here i got something")
-
     if (!adminId) {
       return res.status(400).json({ success: false, message: 'AdminId is missing.' });
     }
@@ -5287,7 +5227,6 @@ const getAssignedUsers = async (req, res) => {
 
     // Final ordering
     query += ` ORDER BY createdAt DESC`;
-    console.log(query, "here o got query ")
 
     // Pagination
     const { page = 1, limit = 4 } = req.query;

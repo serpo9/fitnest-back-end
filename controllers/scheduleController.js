@@ -558,7 +558,6 @@ const scheduleController = {
     `;
 
       const result = sqlService.query(query, async (response) => {
-        console.log(response, "response")
         if (response.success) {
           return res.status(200).json({
             success: true,

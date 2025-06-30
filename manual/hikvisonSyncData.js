@@ -42,7 +42,6 @@ notInsertedMap = {
 async function fetchUserCount() {
     const response = await client.fetch(`${BASE_URL}/Count?format=json`);
     const data = await response.json();
-    console.log("count resposne : ", data);
     return data.UserInfoCount.userNumber;
 }
 
@@ -63,17 +62,14 @@ async function fetchUsers(startPosition) {
     
     const text = await response.text(); // get response as text
     
-    // console.log('Response Text:', text);
     
     // Check if the response contains XML (this can be determined by the start of the response text)
     if (text.startsWith('<')) {
-        console.log('Skipping XML response...');
         return; // Skip further processing if it's XML
     }
     
     try {
         const data = JSON.parse(text); // Try to parse as JSON if it's not XML
-        console.log("data....", data);
         return data.UserInfoSearch.UserInfo || [];
     } catch (error) {
         console.error('Failed to parse JSON:', error);
@@ -105,20 +101,16 @@ async function generateUniqueEmail(baseName) {
 async function saveUsersToDB(users) {
     const baseCounter = await generateUniqueEmail('user');
     let counter = baseCounter;
-    console.log("counter...", counter);
     
     const now = new Date();
 
-    console.log("notInsertedMap[user.employeeNo] : ", notInsertedMap);
     for (let user of users) {
-        console.log("user.employeeNo : ",user.employeeNo)
         if(notInsertedMap[user.employeeNo]){
         const expiryTime = user?.Valid?.endTime ? new Date(user.Valid.endTime) : null;
 
         const formattedExpiry = formatToMySQLDate(user.Valid.endTime);
 
         if (!expiryTime || expiryTime <= now) {
-            console.log(`------- Skipping user ${user.name || 'Unknown'} due to expired Valid. ${formattedExpiry}`);
             continue; // Skip expired users
         }
         const name = (user.name || 'Unknown').replace(/\s+/g, ''); // remove space if there is any
@@ -145,12 +137,8 @@ async function saveUsersToDB(users) {
             employeeNo: employeeNo
         };
 
-        console.log("obj...", obj.email);
         
         sqlService.insert(sqlService.Users, obj, async (response) => {
-            
-            console.log(`Inserted: ${name} | ${email} | ${password}`);
-
             // After inserting user, get userId and insert into membershipPurchases
             const userId = await response.data.id;
             console.log("userId..", userId);
