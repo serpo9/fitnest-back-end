@@ -197,7 +197,6 @@ const userController = {
 			}
 			
 			sqlService.query(query, (response) => {
-				console.log("response..", response);
 
 				if (response.error) {
 					return res.status(500).json({
@@ -362,7 +361,6 @@ const userController = {
 					.json({ success: true, message: "Updated succesfully!" });
 			});
 		} catch (error) {
-			console.log("err...", error);
 			return res
 				.status(500)
 				.json({ success: false, message: "Internal server error" });
@@ -402,7 +400,6 @@ const userController = {
 				}
 			);
 		} catch (error) {
-			console.log("error...", error);
 			return res
 				.status(500)
 				.json({ success: false, message: "Internal server error" });
@@ -462,7 +459,6 @@ const userController = {
 							}
 						});
 					} catch (error) {
-						console.log("Error fetching trainer:", error);
 						return res.status(500).json({
 							success: false,
 							message: "Error fetching trainer's details",
@@ -471,7 +467,6 @@ const userController = {
 				}
 			);
 		} catch (error) {
-			console.log("Error in assigning trainer:", error);
 			return res.status(500).json({
 				success: false,
 				message: "Internal server error",
@@ -644,7 +639,6 @@ WHERE DATEDIFF(m.expiryDate, NOW()) BETWEEN 1 AND 4
 				`
 
 			sqlService.query(query, (response) => {
-				console.log("resposne : ", response)
 				if (response.error) {
 					return res.status(500).json({
 						success: false,
