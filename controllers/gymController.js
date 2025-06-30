@@ -2692,7 +2692,7 @@ const getDueAmount = async (req, res) => {
 
       const formattedDate = formatToLocalDateTime(purchaseDate);
       console.log("formattedDate...", formattedDate);
-      
+
 
       const purchasedPlanQuery = `SELECT * FROM membershipPurchases WHERE userId = ${userId} AND DATE(purchaseDate) = DATE('${formattedDate}')`;
       // console.log("query : ", purchasedPlanQuery)
@@ -2752,7 +2752,7 @@ const getMembershipPlans = async (req, res) => {
 
 const getAllPlans = async (req, res) => {
   const { adminId } = req.params;
-  const query = `SELECT * FROM membershipPlans WHERE isDeleted=false AND userId=${adminId}`;
+  const query = `SELECT * FROM membershipPlans WHERE isDeleted="false" AND userId=${adminId}`;
 
   sqlService.query(query, (response) => {
     if (!response.success) {
@@ -2766,7 +2766,7 @@ const getAllPlans = async (req, res) => {
 };
 
 const getVistiorPlans = async (req, res) => {
-  const query = `SELECT * FROM membershipPlans WHERE isDeleted=false AND planType='visitor'`;
+  const query = `SELECT * FROM membershipPlans WHERE isDeleted="false" AND planType='visitor'`;
 
   sqlService.query(query, (response) => {
     if (!response.success) {
@@ -3831,10 +3831,6 @@ const updateUserPlanStatusIfExpired = async (req, res) => {
   }
 };
 
-
-
-
-
 // Device connection controller
 const entryGate = async (req, res, next) => {
   const { employeeNo, name, userType, valid, doorRight } = req.body;
@@ -3908,8 +3904,6 @@ const entryGate = async (req, res, next) => {
   }
 };
 
-
-
 // Function to register the user on multiple devices
 const registerUserOnDevices = async (devices, userData) => {
   const registrationResults = [];
@@ -3922,101 +3916,6 @@ const registerUserOnDevices = async (devices, userData) => {
   // Return the results for all devices
   return registrationResults;
 };
-
-
-
-
-// const registerUserOnDevice = async (device, userData) => {
-//   console.log(userData, "userData", device);
-//   try {
-//     const deviceIp = device.ipAddress;
-//     const registerUrl = `http://${deviceIp}/ISAPI/AccessControl/Userinfo/Record?format=json`;
-//     const modifyUrl = `http://${deviceIp}/ISAPI/AccessControl/UserInfo/Modify?format=json`;
-
-//     const formatDate = (date, type = 'start') => {
-//       const d = new Date(date);
-//       const year = d.getFullYear();
-//       const month = String(d.getMonth() + 1).padStart(2, '0');
-//       const day = String(d.getDate()).padStart(2, '0');
-//       let hours = String(d.getHours()).padStart(2, '0');
-//       let minutes = String(d.getMinutes()).padStart(2, '0');
-//       let seconds = String(d.getSeconds()).padStart(2, '0');
-
-//       if (type === 'end') {
-//         hours = '23';
-//         minutes = '59';
-//         seconds = '59';
-//       }
-
-//       return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
-//     };
-
-//     const requestData = {
-//       UserInfo: {
-//         employeeNo: userData.userId,
-//         name: userData.name,
-//         userType: "normal",
-//         doorRight: "1",
-//         valid: {
-//           enable: true,
-//           beginTime: formatDate(userData.valid.beginTime, 'start'),
-//           endTime: formatDate(userData.valid.endTime, 'end'),
-//         },
-//         RightPlan: [
-//           {
-//             doorNo: 1,
-//             planTemplateNo: "1"
-//           }
-//         ],
-//       }
-//     };
-
-//     const client = new DigestClient(device.username, device.password);
-
-//     // Try registering user
-//     let response = await client.fetch(registerUrl, {
-//       method: "POST",
-//       body: JSON.stringify(requestData),
-//       headers: { "Content-Type": "application/json" },
-//     });
-
-//     let result = await response.json();
-
-//     if (result.statusCode === 1) {
-//       console.log(`✅ User registered successfully on device ${device.deviceName}`);
-//       return { success: true, deviceName: device.deviceName };
-//     }
-
-//     // If user already exists, modify them
-//     if (result.subStatusCode === 'employeeNoAlreadyExist') {
-//       console.log(`🔁 User exists. Attempting to modify user ${userData.userId} on device ${device.deviceName}...`);
-
-//       let modifyResponse = await client.fetch(modifyUrl, {
-//         method: "PUT",
-//         body: JSON.stringify(requestData),
-//         headers: { "Content-Type": "application/json" },
-//       });
-
-//       let modifyResult = await modifyResponse.json();
-
-//       if (modifyResult.statusCode === 1) {
-//         console.log(`✅ User modified successfully on device ${device.deviceName}`);
-//         return { success: true, deviceName: device.deviceName, modified: true };
-//       } else {
-//         console.log(`❌ Failed to modify user on device ${device.deviceName}:`, modifyResult.errorMsg);
-//         return { success: false, data: modifyResult.subStatusCode };
-//       }
-//     }
-
-//     // General failure
-//     console.log(`❌ Failed to register user on device ${device.deviceName}:`, result.errorMsg);
-//     return { success: false, data: result.subStatusCode };
-
-//   } catch (err) {
-//     console.error(`Error registering/modifying user on device ${device.deviceName}:`, err);
-//     return { success: false, error: err.message };
-//   }
-// };
 
 const registerUserOnDevice = async (device, userData) => {
 
@@ -5344,8 +5243,8 @@ const getAssignedUsers = async (req, res) => {
   try {
     const { adminId } = req.params;
     const { fromDate, toDate, searchTerm, filter } = req.query;
-    
-    console.log(req.query , "here i got something")
+
+    console.log(req.query, "here i got something")
 
     if (!adminId) {
       return res.status(400).json({ success: false, message: 'AdminId is missing.' });
@@ -5358,16 +5257,14 @@ const getAssignedUsers = async (req, res) => {
     `;
 
     // Date range filter
-if (
-  fromDate &&
-  toDate &&
-  fromDate.trim().toLowerCase() !== 'undefined' &&
-  toDate.trim().toLowerCase() !== 'undefined' &&
-  fromDate.trim() !== '' &&
-  toDate.trim() !== ''
-)
-
-{
+    if (
+      fromDate &&
+      toDate &&
+      fromDate.trim().toLowerCase() !== 'undefined' &&
+      toDate.trim().toLowerCase() !== 'undefined' &&
+      fromDate.trim() !== '' &&
+      toDate.trim() !== ''
+    ) {
       const from = `${fromDate} 00:00:00`;
       const to = `${toDate} 23:59:59`;
       query += ` AND createdAt BETWEEN '${from}' AND '${to}'`;
@@ -5378,25 +5275,25 @@ if (
       query += ` AND username LIKE '%${searchTerm}%'`;
     }
 
-   
+
 
     // Final ordering
     query += ` ORDER BY createdAt DESC`;
-    console.log(query ,"here o got query ")
+    console.log(query, "here o got query ")
 
     // Pagination
     const { page = 1, limit = 4 } = req.query;
     const offset = (page - 1) * limit;
 
     query += ` LIMIT ${limit} OFFSET ${offset}`;
-       // Build count query
+    // Build count query
     let countQuery = `
       SELECT COUNT(*) AS total FROM clientDietPlans
       WHERE adminId = ${adminId}
     `;
 
     // Execute query
- sqlService.query(query, (response) => {
+    sqlService.query(query, (response) => {
       if (!response.success) {
         return res.status(500).json({
           success: false,
@@ -5426,7 +5323,7 @@ if (
           totalPages: Math.ceil(total / limit),
         });
       });
-  
+
     });
   } catch (error) {
     console.error('Error fetching assigned users:', error.message);
@@ -5434,6 +5331,42 @@ if (
   }
 };
 
+const deleteMembershipPlan = async (req, res) => {
+  try {
+    const { adminId, planId } = req.body;
+
+    if (!adminId || !planId) {
+      return res.status(200).json({ success: false, message: 'AdminId ID and Plan ID are required' });
+    }
+
+    // Find the plan first to verify ownership
+    const plan = await sqlService.MembershipPlans.findOne({
+      where: {
+        id: planId,
+        userId: adminId
+      }
+    });
+
+
+    if (!plan.dataValues) {
+      return res.status(200).json({ success: false, message: 'Membership plan not found or already deleted' });
+    }
+
+    // Soft delete: update isDeleted to 'true'
+    await sqlService.MembershipPlans.update(
+      { isDeleted: 'true' },
+      { where: { id: planId, userId: adminId } }
+    );
+
+    return res.status(200).json({ success: true, message: 'Membership plan deleted successfully' });
+  } catch (error) {
+    return res.status(200).json({
+      success: false,
+      message: 'Failed to delete membership plan',
+      error: error.message
+    });
+  }
+};
 
 
 
@@ -5518,5 +5451,6 @@ module.exports = {
   getTrainerPDFs,
   getPlansByAdminOrTrainerId,
   assignPlanToUser,
-  getAssignedUsers
+  getAssignedUsers,
+  deleteMembershipPlan
 }
