@@ -113,6 +113,7 @@ router.get('/memberships-history/:adminId', gymController.getMembershipPaymentHi
 // Leave Based APIs
 router.get('/active-staffs/:adminId', gymController.getActiveStaffUsers);
 router.post('/manage-leave', gymController.manageHolidaySummary);
+router.get('/leave-details/:adminId', gymController.getLeaveDetails);
 
 //************** */ device connnection  //************** */ 
 router.post('/device-entry-gate', gymController.entryGate);

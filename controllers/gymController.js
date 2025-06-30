@@ -2686,7 +2686,7 @@ const getDueAmount = async (req, res) => {
 
 
       const purchasedPlanQuery = `SELECT * FROM membershipPurchases WHERE userId = ${userId} AND DATE(purchaseDate) = DATE('${formattedDate}')`;
-  
+
       sqlService.query(purchasedPlanQuery, purchasedPlanRes => {
         if (!purchasedPlanRes.success || purchasedPlanRes.data.length == 0) {
           return res.json({ success: false, message: "no data found or something went wrong" });
@@ -3678,7 +3678,13 @@ const getActiveStaffUsers = (req, res) => {
   // }
 
   if (searchTerm && searchTerm !== 'null') {
-    query += ` AND phoneNumber LIKE '%${searchTerm}%'`;
+    query += `
+    AND (
+      name LIKE '%${searchTerm}%'
+      OR phoneNumber LIKE '%${searchTerm}%'
+      OR employeeNo LIKE '%${searchTerm}%'
+    )
+  `;
   }
 
   sqlService.query(query, (response) => {
@@ -5315,6 +5321,77 @@ const deleteMembershipPlan = async (req, res) => {
   }
 };
 
+const getLeaveDetails = async (req, res) => {
+  try {
+    const { adminId } = req.params;
+    const { searchTerm, fromDate, toDate } = req.query;
+
+    if (!adminId) {
+      return res.status(400).json({
+        success: false,
+        message: "userId and adminId are required",
+      });
+    }
+
+    // Base query
+    let query = `
+      SELECT 
+        ld.id,
+        ld.userId,
+        ld.adminId,
+        ld.leaveDate,
+        ld.leaveType,
+        u.name,
+        u.email,
+        u.employeeNo,
+        u.phoneNumber,
+        u.userType
+      FROM leaveDetails ld
+      JOIN users u ON ld.userId = u.id
+      WHERE ld.adminId = ${adminId} AND ld.isCancelled='false'
+    `;
+
+    // Optional search filter
+    if (searchTerm) {
+      query += `
+        AND (
+          u.name LIKE '%${searchTerm}%'
+          OR u.phoneNumber LIKE '%${searchTerm}%'
+          OR u.employeeNo LIKE '%${searchTerm}%'
+        )
+      `;
+    }
+
+    // Optional date range filtering
+    if (fromDate && toDate && fromDate != 'null' && toDate != 'null' && fromDate != 'NaN-NaN-NaN' && toDate != 'NaN-NaN-NaN') {
+      query += ` AND ld.leaveDate BETWEEN '${fromDate}' AND '${toDate}'`;
+    } 
+
+    query += ` ORDER BY ld.leaveDate DESC`;
+
+    sqlService.query(query, (response) => {
+      if (!response.success) {
+        return res.status(500).json({
+          success: false,
+          message: "Failed to fetch leave details",
+        });
+      }
+
+      return res.status(200).json({
+        success: true,
+        data: response.data,
+      });
+    });
+
+  } catch (error) {
+    console.error("Error fetching leave details:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+};
+
 
 
 
@@ -5399,5 +5476,6 @@ module.exports = {
   getPlansByAdminOrTrainerId,
   assignPlanToUser,
   getAssignedUsers,
-  deleteMembershipPlan
+  deleteMembershipPlan,
+  getLeaveDetails
 }
